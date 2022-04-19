@@ -1,0 +1,3 @@
+[submodule "lib/archethic_playground/archethic-node"]
+	path = lib/archethic_playground/archethic-node
+	url = https://github.com/archethic-foundation/archethic-node

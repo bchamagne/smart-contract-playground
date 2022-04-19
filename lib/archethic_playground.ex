@@ -1,18 +1,8 @@
 defmodule ArchethicPlayground do
-  @moduledoc """
-  Documentation for `ArchethicPlayground`.
-  """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> ArchethicPlayground.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def interpret(code) do
+    ArchEthic.Contracts.Interpreter.parse(code)
   end
+  
+
 end

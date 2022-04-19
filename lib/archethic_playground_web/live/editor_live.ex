@@ -19,6 +19,7 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   end
   
   def handle_event("interpret", %{"code" => code}, socket) do
-    {:reply, %{status: "ok"}, socket}
+   ArchethicPlayground.interpret(code) |> IO.inspect()
+   {:reply, %{status: "ok"}, socket}
   end
 end

@@ -22,9 +22,15 @@
   },
   "homepage": "https://github.com/archethic-foundation/smart-contract-playground#readme",
   "dependencies": {
+    "@codemirror/autocomplete": "^0.19.15",
+    "@codemirror/basic-setup": "^0.19.3",
+    "@codemirror/commands": "^0.19.8",
+    "@codemirror/state": "^0.19.9",
+    "@codemirror/view": "^0.19.48",
     "alpinejs": "^3.8.1",
     "bulma": "^0.9.3",
     "highlight.js": "^10.7.3",
+    "monaco-editor": "^0.33.0",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "phoenix_live_view": "file:../deps/phoenix_live_view"

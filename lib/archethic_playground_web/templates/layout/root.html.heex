@@ -10,6 +10,18 @@
     <%= csrf_meta_tag() %>
   </head>
   <body>
+    <header>
+      <nav class="navbar is-info" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item">Archethic Playground</a>
+           <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+             <span aria-hidden="true"></span>
+             <span aria-hidden="true"></span>
+             <span aria-hidden="true"></span>
+           </a>
+        </div>
+      </nav>
+    </header>
     <main class="pt-6">
       <%= @inner_content %>
      </main>

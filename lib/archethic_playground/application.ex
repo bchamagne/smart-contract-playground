@@ -10,6 +10,7 @@ defmodule ArchethicPlayground.Application do
     children = [
       # Starts a worker by calling: ArchethicPlayground.Worker.start_link(arg)
       # {ArchethicPlayground.Worker, arg}
+      ArchethicPlaygroundWeb.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -27,7 +27,8 @@ defmodule ArchethicPlayground.MixProject do
       {:phoenix_live_view, "~> 0.17.9"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev}
+      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
+      {:dart_sass, "~> 0.4", runtime: Mix.env() == :dev}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
@@ -36,7 +37,7 @@ defmodule ArchethicPlayground.MixProject do
   defp aliases do
     [
       setup: ["deps.get"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["esbuild default --minify", "sass default --no-source-map --style=compressed", "phx.digest"]
     ]
   end
 end

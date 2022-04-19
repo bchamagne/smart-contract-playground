@@ -1,5 +1,3 @@
-import {} from "../css/app.css"
-
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 
@@ -8,6 +6,8 @@ import Alpine  from "alpinejs"
 
 window.Alpine = Alpine
 Alpine.start()
+
+
 
 let Hooks = {}
 

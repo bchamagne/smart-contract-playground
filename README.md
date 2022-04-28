@@ -1,4 +1,4 @@
-# ArchethicPlayground
+# Archethic Playground
 
 **TODO: Add description**
 

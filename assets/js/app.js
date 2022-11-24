@@ -71,8 +71,31 @@ let Hooks = {};
 // Load the editor
 Hooks.hook_LoadEditor = {
   mounted() {
-    loadEditor().then((monaco) => {
-      window.editor = monaco
+    loadEditor().then(({editor, monaco}) => {
+      window.editor = editor;
+      window.monaco = monaco;
+      window.editor.onKeyUp(() => {
+        if(this.keyUpHandler) clearTimeout(this.keyUpHandler);
+        this.keyUpHandler = setTimeout(() => {
+          this.pushEvent("interpret", { contract: window.editor.getValue() }, (reply, ref) => {
+            const model = window.editor.getModel();
+            if(reply.result.status == "error") {
+              const lineNumber = extractLineNumber(reply.result.message);
+              const markers = [{
+                message: reply.result.message,
+                severity: monaco.MarkerSeverity.Error,
+                startLineNumber: lineNumber,
+                startColumn: 1,
+                endLineNumber: lineNumber,
+                endColumn: model.getLineLength(lineNumber) + 1
+              }];
+              window.monaco.editor.setModelMarkers(model, 'owner', markers);
+            } else {
+              window.monaco.editor.setModelMarkers(model, 'owner', []);
+            }
+          });
+        }, this.el.dataset.debounceValidation);
+      })
     });
   }
 };
@@ -85,7 +108,6 @@ Hooks.hook_ValidateContract = {
     });
   }
 };
-
 
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
@@ -137,4 +159,10 @@ function data() {
       setThemeToLocalStorage(this.dark);
     },
   };
+}
+
+function extractLineNumber(message) {
+  const reg = new RegExp(/L(\d+)(:C(\d+))?$/g);
+  const found = reg.exec(message);
+  return parseInt(found[1]);
 }

@@ -2,7 +2,6 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   @moduledoc false
   alias ArchethicPlaygroundWeb.HeaderComponent
   alias ArchethicPlaygroundWeb.SidebarComponent
-  alias ArchethicPlaygroundWeb.ConsoleComponent
 
   use Phoenix.LiveView
 
@@ -11,16 +10,14 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   @dialyzer {:nowarn_function, render: 1}
 
   def render(assigns) do
-    ~L"""
+    ~H"""
     <div class="flex bg-gray-50 dark:bg-gray-900" >
-    <%= live_component @socket, SidebarComponent, assigns %>
+    <.live_component module={SidebarComponent} id="sidebar" />
       <div class="flex h-screen flex-col flex-1">
-        <%= live_component @socket, HeaderComponent, assigns %>
+      <.live_component module={HeaderComponent} id="header" />
           <!-- monaco.editor -->
-          <div class="h-screen" id="archethic-editor" phx-hook="hook_LoadEditor" phx-update="ignore">
+          <div class="h-screen" id="archethic-editor" phx-hook="hook_LoadEditor" phx-update="ignore" data-debounce-validation="1000">
           </div>
-
-         <%= live_component @socket, ConsoleComponent, assigns %>
           <!-- end monaco.editor -->
       </div>
     </div>
@@ -45,19 +42,7 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
           %{status: :error, message: message}
       end
 
-    # Time of execution. Picking NaiveDateTime to show the local
-    # execution time
-    result =
-      result
-      |> Map.put(:time, NaiveDateTime.local_now())
-
-    terminal = [result | socket.assigns.terminal]
-
-    socket =
-      socket
-      |> assign(:terminal, terminal)
-
-    {:reply, %{}, socket}
+    {:reply, %{result: result}, socket}
   end
 
   # def handle_event("interpret", %{"code" => code}, socket) do

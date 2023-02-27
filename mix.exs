@@ -39,6 +39,7 @@ defmodule ArchethicPlayground.MixProject do
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_view, "~> 0.18"},
       {:phoenix_pubsub, "~> 2.0"},
+      {:phoenix_ecto, "~> 4.4"},
       # Added to avoid conflict with archethic-node
       {:ranch, "~> 2.1", override: true},
 
@@ -60,7 +61,7 @@ defmodule ArchethicPlayground.MixProject do
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:archethic,
         git: "https://github.com/archethic-foundation/archethic-node.git",
-        tag: "v0.27.0",
+       tag: "v1.0.7",
         runtime: false}
     ]
   end

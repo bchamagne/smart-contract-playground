@@ -66,10 +66,11 @@ defmodule ArchethicPlaygroundWeb.SidebarComponent do
       </li>
       <!-- end menu.validate -->
       <!-- menu.deploy -->
-      <li class="relative px-6 py-3">
+      <li class="relative px-6 py-3" phx-click="toggle_deploy">
         <a
                 class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
                 href="#"
+                id="id_DeployContract"
                 data-tippy-content="Deploy Contracts"
               >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">
@@ -83,6 +84,7 @@ defmodule ArchethicPlaygroundWeb.SidebarComponent do
         <a
                 class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
                 href="#"
+                id="id_Triggers"
                 data-tippy-content="Triggers"
               >
           <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6" viewBox="0 0 16 16">

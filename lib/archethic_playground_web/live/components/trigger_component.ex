@@ -21,7 +21,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
             <div class="absolute inset-0 px-2 sm:px-2">
                 <div class="h-full border-2 border border-gray-500 bg-black text-gray-200 p-4 overflow-y-auto">
                     <div class="block">
-                        <.form :let={f} for={:form} phx-submit="execute_action" phx-change="update_form" phx-target={@myself} class="w-full max-w-lg">
+                        <.form :let={f} for={%{}} as={:form} phx-submit="execute_action" phx-change="update_form" phx-target={@myself} class="w-full max-w-lg">
                             <div class="flex flex-wrap -mx-3 mb-6">
                             <div class="w-full px-3">
                                 <label class="block uppercase tracking-wide text-xs font-bold mb-2" for="triggers">
@@ -35,16 +35,21 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
                                 <label class="block uppercase tracking-wide text-xs font-bold mb-2" for="oracle-content">
                                     Oracle content
                                 </label>
-                                <%= text_input f, :oracle_content, id: "oracle-content", class: "appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"  %>
+                                <%= text_input f, :oracle_content, id: "oracle-content", required: true, class: "appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"  %>
                                 </div>
                             <% end %>
                             </div>
                             <%= unless @display_transaction_form do %>
-                            <%= submit "Trigger", disabled: @selected_trigger == "", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" %>
+                              <%= submit "Trigger", disabled: @selected_trigger == "", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" %>
                             <% end %>
                         </.form>
                         <%= if @display_transaction_form do %>
-                            <.live_component module={CreateTransactionComponent} id="create-transaction" />
+                          <.live_component module={CreateTransactionComponent} id="create-transaction-trigger" module_to_update={__MODULE__} id_to_update="trigger_component" smart_contract_code={@smart_contract_code} aes_key={@aes_key} />
+                          <div class="mt-5">
+                            <a phx-click="execute_transaction" phx-target={@myself} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" href="#">
+                              Trigger
+                            </a>
+                          </div>
                         <% end %>
                     </div>
                 </div>
@@ -61,6 +66,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
       |> assign(:display_oracle_form, false)
       |> assign(:selected_trigger, "")
       |> assign(:transaction, %{})
+      |> assign(:aes_key, :crypto.strong_rand_bytes(32))
 
     {:ok, socket}
   end
@@ -107,9 +113,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
     {:noreply, socket}
   end
 
-  def update(%{transaction: transaction}, socket) do
-    socket = assign(socket, transaction: transaction)
-
+  def handle_event("execute_transaction", _, socket) do
     trigger_transaction =
       execute_contract(
         :transaction,
@@ -119,6 +123,11 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
       )
 
     send(self(), {:trigger_transaction, trigger_transaction})
+    {:noreply, socket}
+  end
+
+  def update(%{transaction_map: transaction}, socket) do
+    socket = assign(socket, transaction: transaction)
     {:ok, socket}
   end
 
@@ -144,7 +153,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
       "contract" => contract_constants
     }
 
-    ActionInterpreter.execute(Map.fetch!(triggers, type), constants)
+    call_execute(Map.fetch!(triggers, type), constants)
   end
 
   def execute_contract(
@@ -160,21 +169,27 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
         %{"form" => %{"oracle_content" => oracle_content}},
         _socket
       ) do
-    transaction =
-      Constants.from_transaction(%Transaction{
-        address: "",
-        type: :oracle,
-        data: %TransactionData{
-          content: oracle_content
+    case Jason.decode(oracle_content) do
+      {:ok, _} ->
+        transaction =
+          Constants.from_transaction(%Transaction{
+            address: "",
+            type: :oracle,
+            data: %TransactionData{
+              content: oracle_content
+            }
+          })
+
+        constants = %{
+          "contract" => contract_constants,
+          "transaction" => transaction
         }
-      })
 
-    constants = %{
-      "contract" => contract_constants,
-      "transaction" => transaction
-    }
+        call_execute(Map.fetch!(triggers, :oracle), constants)
 
-    ActionInterpreter.execute(Map.fetch!(triggers, :oracle), constants)
+      {:error, _} ->
+        "Error: the oracle content should be a JSON object"
+    end
   end
 
   def execute_contract(
@@ -203,6 +218,14 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
       "transaction" => socket.assigns.transaction
     }
 
-    ActionInterpreter.execute(Map.fetch!(triggers, :transaction), constants)
+    call_execute(Map.fetch!(triggers, :transaction), constants)
+  end
+
+  defp call_execute(type, constants) do
+    try do
+      ActionInterpreter.execute(type, constants)
+    rescue
+      e -> e
+    end
   end
 end

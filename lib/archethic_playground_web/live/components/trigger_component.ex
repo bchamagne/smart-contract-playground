@@ -5,7 +5,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
 
   alias Archethic.Contracts.Contract
   alias Archethic.Contracts.ContractConstants, as: Constants
-  alias Archethic.Contracts.ActionInterpreter
+  alias Archethic.Contracts.Interpreter
   alias ArchethicPlaygroundWeb.CreateTransactionComponent
 
   alias Archethic.TransactionChain.{
@@ -139,6 +139,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
         {trigger_type, _} = type,
         %{
           contract: %Contract{
+            version: version,
             triggers: triggers,
             constants: %Constants{
               contract: contract_constants
@@ -153,13 +154,14 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
       "contract" => contract_constants
     }
 
-    call_execute(Map.fetch!(triggers, type), constants)
+    call_execute(version, Map.fetch!(triggers, type), constants)
   end
 
   def execute_contract(
         :oracle,
         %{
           contract: %Contract{
+            version: version,
             triggers: triggers,
             constants: %Constants{
               contract: contract_constants
@@ -185,7 +187,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
           "transaction" => transaction
         }
 
-        call_execute(Map.fetch!(triggers, :oracle), constants)
+        call_execute(version, Map.fetch!(triggers, :oracle), constants)
 
       {:error, _} ->
         "Error: the oracle content should be a JSON object"
@@ -196,6 +198,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
         :transaction,
         %{
           contract: %Contract{
+            version: version,
             triggers: triggers,
             constants: %Constants{
               # contract: contract_constants
@@ -218,12 +221,12 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
       "transaction" => socket.assigns.transaction
     }
 
-    call_execute(Map.fetch!(triggers, :transaction), constants)
+    call_execute(version, Map.fetch!(triggers, :transaction), constants)
   end
 
-  defp call_execute(type, constants) do
+  defp call_execute(version, type, constants) do
     try do
-      ActionInterpreter.execute(type, constants)
+      Interpreter.execute_trigger(version, type, constants)
     rescue
       e -> e
     end

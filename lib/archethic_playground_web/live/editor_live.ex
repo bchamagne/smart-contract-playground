@@ -26,11 +26,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
     {:ok, socket}
   end
 
-  def handle_event("interpret", %{"code" => code}, socket) do
+  def handle_event("parse", %{"code" => code}, socket) do
     send(self(), {:console, :clear})
 
     {socket, result} =
-      case ArchethicPlayground.interpret(code) do
+      case ArchethicPlayground.parse(code) do
         {:ok, interpreted_contract} ->
           triggers =
             interpreted_contract.triggers
@@ -84,10 +84,4 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   defp get_key({:datetime, datetime}), do: "datetime:#{DateTime.to_unix(datetime)}"
   defp get_key(:oracle), do: "oracle"
   defp get_key(:transaction), do: "transaction"
-
-  # def handle_event("interpret", %{"code" => code}, socket) do
-  #   # ArchethicPlayground.interpret(code)
-
-  #   {:reply, %{status: "ok"}, socket}
-  # end
 end

@@ -4,7 +4,9 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
   use ArchethicPlaygroundWeb, :live_component
 
   alias Archethic.Contracts.ContractConstants, as: Constants
-  alias Archethic.Contracts.Interpreter
+  alias Archethic.Contracts
+  alias Archethic.Contracts.Contract
+  alias Archethic.TransactionChain.Transaction
   alias ArchethicPlaygroundWeb.CreateTransactionComponent
 
   def render(assigns) do
@@ -121,11 +123,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
         execute_contract(
           :transaction,
           socket.assigns.interpreted_contract,
-          # type must be an atom for the constants.to_transaction
-          Constants.to_transaction(%{
-            tx
-            | "type" => socket.assigns.transaction["type"]
-          })
+          Constants.to_transaction(tx)
         )
     end
 
@@ -145,13 +143,64 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
     send(self(), {:console, :clear})
     send(self(), {:console, "Executing contract trigger: #{inspect(trigger)}"})
 
-    # TO DO: replace `calls` value with data passed by the user
-    case Interpreter.execute(trigger, contract, maybe_tx, []) do
-      {:ok, tx_or_nil} ->
-        send(self(), {:console, %{"success" => tx_or_nil}})
+    # TODO: the time to use should be set-able by the user
+    datetime = DateTime.utc_now()
 
+    # TODO: calls should be set-able by the user
+    calls = []
+
+    with :ok <- check_valid_precondition(trigger, contract, maybe_tx, datetime),
+         {:ok, tx_or_nil} <-
+           Contracts.execute_trigger(trigger, contract, maybe_tx, calls, time_now: datetime),
+         :ok <- check_valid_postcondition(contract, tx_or_nil, datetime) do
+      send(self(), {:console, %{"success" => tx_or_nil}})
+    else
       {:error, reason} ->
         send(self(), {:console, %{"error" => reason}})
     end
   end
+
+  ###########
+  defp check_valid_precondition(
+         :oracle,
+         contract = %Contract{},
+         tx = %Transaction{},
+         datetime
+       ) do
+    if Contracts.valid_condition?(:oracle, contract, tx, datetime) do
+      :ok
+    else
+      {:error, :invalid_oracle_constraints}
+    end
+  end
+
+  defp check_valid_precondition(
+         :transaction,
+         contract = %Contract{},
+         tx = %Transaction{},
+         datetime
+       ) do
+    if Contracts.valid_condition?(:transaction, contract, tx, datetime) do
+      :ok
+    else
+      {:error, :invalid_transaction_constraints}
+    end
+  end
+
+  defp check_valid_precondition(_, _, _, _), do: :ok
+
+  ##########
+  defp check_valid_postcondition(
+         contract = %Contract{},
+         next_tx = %Transaction{},
+         datetime
+       ) do
+    if Contracts.valid_condition?(:inherit, contract, next_tx, datetime) do
+      :ok
+    else
+      {:error, :invalid_inherit_constraints}
+    end
+  end
+
+  defp check_valid_postcondition(_, _, _), do: :ok
 end

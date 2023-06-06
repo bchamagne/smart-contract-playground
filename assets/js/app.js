@@ -77,7 +77,7 @@ Hooks.hook_LoadEditor = {
       window.editor.onKeyUp(() => {
         if (this.keyUpHandler) clearTimeout(this.keyUpHandler);
         this.keyUpHandler = setTimeout(() => {
-          this.pushEvent("interpret", { code: window.editor.getValue() }, (reply, ref) => {
+          this.pushEvent("parse", { code: window.editor.getValue() }, (reply, ref) => {
             const model = window.editor.getModel();
             if (reply.result.status == "error") {
               const lineNumber = extractLineNumber(reply.result.message);
@@ -106,7 +106,7 @@ Hooks.hook_LoadEditor = {
 Hooks.hook_ValidateContract = {
   mounted() {
     this.el.addEventListener('click', (event) => {
-      this.pushEvent("interpret", { code: window.editor.getValue() });
+      this.pushEvent("parse", { code: window.editor.getValue() });
     });
   }
 };

@@ -60,9 +60,9 @@ defmodule ArchethicPlayground.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:archethic,
-        git: "https://github.com/archethic-foundation/archethic-node.git",
-       tag: "v1.2.1",
-        runtime: false}
+       git: "https://github.com/archethic-foundation/archethic-node.git",
+       tag: "v1.2.2",
+       runtime: false}
     ]
   end
 

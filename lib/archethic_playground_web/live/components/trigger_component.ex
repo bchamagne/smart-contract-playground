@@ -146,12 +146,9 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
     # TO DO: the time to use should be set-able by the user
     datetime = DateTime.utc_now()
 
-    # TO DO: calls should be set-able by the user
-    calls = []
-
     with :ok <- check_valid_precondition(trigger, contract, maybe_tx, datetime),
          {:ok, tx_or_nil} <-
-           Contracts.execute_trigger(trigger, contract, maybe_tx, calls, time_now: datetime),
+           Contracts.execute_trigger(trigger, contract, maybe_tx, time_now: datetime),
          :ok <- check_valid_postcondition(contract, tx_or_nil, datetime) do
       send(self(), {:console, %{"success" => tx_or_nil}})
     else

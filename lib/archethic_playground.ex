@@ -5,7 +5,6 @@ defmodule ArchethicPlayground do
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
   alias Archethic.TransactionChain.Transaction
-  alias Archethic.TransactionChain.TransactionData
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
 

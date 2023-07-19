@@ -167,7 +167,8 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
            uri.host,
            uri.port,
            Crypto.default_curve(),
-           scheme_to_proto(uri.scheme)
+           scheme_to_proto(uri.scheme),
+           await_timeout: 15_000
          ) do
       {:ok, address} ->
         %URI{uri | path: "/explorer/transaction/" <> Base.encode16(address)}

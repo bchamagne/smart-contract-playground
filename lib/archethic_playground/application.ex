@@ -9,13 +9,15 @@ defmodule ArchethicPlayground.Application do
 
   @impl true
   def start(_type, _args) do
+    ws_opts = Application.get_env(:archethic_playground, :absinthe_endpoint, [])
+
     children = [
       # Starts a worker by calling: ArchethicPlayground.Worker.start_link(arg)
       # {ArchethicPlayground.Worker, arg}
       ArchethicPlaygroundWeb.Supervisor,
       {Phoenix.PubSub, [name: ArchethicPlayground.PubSub, adapter: Phoenix.PubSub.PG2]},
       LibSodiumPort,
-      WSSupervisor
+      {WSSupervisor, ws_opts}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

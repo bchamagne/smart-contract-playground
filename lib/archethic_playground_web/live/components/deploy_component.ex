@@ -187,19 +187,22 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
   defp scheme_to_proto("https"), do: :https
 
   defp list_endpoints() do
-    mainnet_allowed? =
-      Application.get_env(:archethic_playground, ArchethicPlaygroundWeb.EditorLive, [])
-      |> Keyword.get(:mainnet_allowed)
+    conf = Application.get_env(:archethic_playground, __MODULE__, [])
 
     endpoints = [
-      "https://testnet.archethic.net",
-      "https://localhost:5000"
+      if Keyword.get(conf, :mainnet_allowed) do
+        ["https://mainnet.archethic.net"]
+      else
+        []
+      end,
+      if Keyword.get(conf, :localnet_allowed) do
+        ["http://localhost:4000"]
+      else
+        []
+      end,
+      "https://testnet.archethic.net"
     ]
 
-    if mainnet_allowed? do
-      endpoints ++ ["https://mainnet.archethic.net"]
-    else
-      endpoints
-    end
+    List.flatten(endpoints)
   end
 end

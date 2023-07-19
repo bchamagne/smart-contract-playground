@@ -25,4 +25,5 @@ config :archethic_playground, ArchethicPlaygroundWeb.Endpoint,
   ]
 
 config :archethic_playground, ArchethicPlaygroundWeb.DeployComponent,
-  mainnet_allowed: System.get_env("MAINNET_ALLOWED", "true") == "true"
+  mainnet_allowed: false,
+  localnet_allowed: true

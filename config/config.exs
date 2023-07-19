@@ -21,7 +21,8 @@ config :esbuild,
   ]
 
 config :archethic_playground, ArchethicPlaygroundWeb.DeployComponent,
-  mainnet_allowed: System.get_env("MAINNET_ALLOWED", "false") == "true"
+  mainnet_allowed: System.get_env("MAINNET_ALLOWED", "false") == "true",
+  localnet_allowed: System.get_env("LOCALNET_ALLOWED", "false") == "true"
 
 config :tailwind,
   version: "3.2.1",

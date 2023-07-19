@@ -17,10 +17,10 @@
   <%= if dest != nil do %>
     <.alert with_icon color="info" class="mb-2">
       <div class="font-bold">Contract's address</div>
-      <.a to={dest.contract_url}><%= dest.contract_address %></.a>
+      <.a to={dest.contract_url} target="_blank"><%= dest.contract_address %></.a>
 
       <div class="font-bold">Contract's genesis address</div>
-      <.a to={dest.genesis_url}><%= dest.genesis_address %></.a>
+      <.a to={dest.genesis_url} target="_blank"><%= dest.genesis_address %></.a>
     </.alert>
   <% end %>
 
@@ -65,7 +65,8 @@
   <%= if RemoteData.success?(@deploy) do %>
     <% address = RemoteData.result(@deploy) %>
     <.alert with_icon color="success">
-      Transaction created! <br /><br /> <.a to={address} label="View the transaction" />
+      Transaction created! <br /><br />
+      <.a to={address} target="_blank" label="View the transaction" />
     </.alert>
   <% end %>
 

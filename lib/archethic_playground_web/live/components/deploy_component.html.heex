@@ -13,6 +13,17 @@
     <.field field={@form[:seed]} label="Seed*" help_text="The seed of the transaction chain" />
   </.form>
 
+  <% dest = destination(@form) %>
+  <%= if dest != nil do %>
+    <.alert with_icon color="info" class="mb-2">
+      <div class="font-bold">Contract's address</div>
+      <.a to={dest.contract_url}><%= dest.contract_address %></.a>
+
+      <div class="font-bold">Contract's genesis address</div>
+      <.a to={dest.genesis_url}><%= dest.genesis_address %></.a>
+    </.alert>
+  <% end %>
+
   <% seed = input_value(@form, :seed) %>
   <.button
     disabled={seed == nil || seed == "" || RemoteData.loading?(@fees)}
@@ -27,7 +38,7 @@
 
   <%= if RemoteData.success?(@fees) do %>
     <% fees = RemoteData.result(@fees) %>
-    <.alert with_icon color="info" heading="Estimated fees">
+    <.alert with_icon color="info" heading="Estimated fees" class="mb-2">
       <div class="flex justify-center gap-1">
         <.badge variant="dark" color="primary" label={Float.to_string(fees.uco) <> " UCO"} />
         <.badge variant="dark" color="warning" label={"~" <> Float.to_string(fees.usd) <> " USD"} />
@@ -54,7 +65,7 @@
   <%= if RemoteData.success?(@deploy) do %>
     <% address = RemoteData.result(@deploy) %>
     <.alert with_icon color="success">
-      Transaction created! <.a to={address} label="View the transaction" />
+      Transaction created! <br /><br /> <.a to={address} label="View the transaction" />
     </.alert>
   <% end %>
 

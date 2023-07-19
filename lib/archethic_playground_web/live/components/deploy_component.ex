@@ -2,7 +2,7 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
   @moduledoc false
 
   use ArchethicPlaygroundWeb, :live_component
-
+  alias ArchethicPlayground.Utils
   alias ArchethicPlayground.Transaction
   alias ArchethicPlayground.RemoteData
   alias Archethic.Crypto
@@ -204,5 +204,37 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
     ]
 
     List.flatten(endpoints)
+  end
+
+  defp destination(form) do
+    seed = form.source["seed"]
+    endpoint = form.source["endpoint"]
+
+    if seed == "" do
+      nil
+    else
+      # assumption that contract is deployed at index 1 (to be changed later by using chain_length+1)
+      contract_address = seed_to_address(seed, 1)
+      genesis_address = seed_to_address(seed, 0)
+
+      uri = URI.parse(endpoint)
+      contract_url = URI.to_string(%URI{uri | path: "/explorer/transaction/#{contract_address}"})
+      genesis_url = URI.to_string(%URI{uri | path: "/explorer/transaction/#{genesis_address}"})
+
+      %{
+        contract_address: Utils.Format.minify_address(contract_address),
+        genesis_address: Utils.Format.minify_address(genesis_address),
+        contract_url: contract_url,
+        genesis_url: genesis_url
+      }
+    end
+  end
+
+  defp seed_to_address(seed, idx) do
+    seed
+    |> Crypto.derive_keypair(idx)
+    |> elem(0)
+    |> Crypto.derive_address()
+    |> Base.encode16()
   end
 end

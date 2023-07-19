@@ -193,7 +193,7 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
 
     endpoints = [
       "https://testnet.archethic.net",
-      "http://localhost:4000"
+      "https://localhost:5000"
     ]
 
     if mainnet_allowed? do

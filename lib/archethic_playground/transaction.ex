@@ -136,12 +136,9 @@ defmodule ArchethicPlayground.Transaction do
   end
 
   def to_archethic(t = %__MODULE__{}) do
-    %ArchethicTransaction{
+    tx = %ArchethicTransaction{
       type: String.to_existing_atom(t.type),
       address: hex_to_bin(t.address),
-      validation_stamp: %ArchethicTransaction.ValidationStamp{
-        timestamp: Utils.Date.browser_timestamp_to_datetime(t.validation_timestamp)
-      },
       data: %TransactionData{
         code: t.code,
         content: t.content,
@@ -185,6 +182,16 @@ defmodule ArchethicPlayground.Transaction do
             }
           end)
       }
+    }
+
+    %ArchethicTransaction{
+      tx
+      | validation_stamp: %ArchethicTransaction.ValidationStamp{
+          timestamp: Utils.Date.browser_timestamp_to_datetime(t.validation_timestamp),
+          ledger_operations: %ArchethicTransaction.ValidationStamp.LedgerOperations{
+            transaction_movements: ArchethicTransaction.get_movements(tx)
+          }
+        }
     }
   end
 

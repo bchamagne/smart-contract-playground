@@ -16,6 +16,11 @@
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")} />
     <%= live_title_tag(assigns[:page_title] || "Archethic Playground") %>
     <%= csrf_meta_tag() %>
+
+    <%= if Application.get_env(:archethic_playground, :plausible, false) do %>
+      <script defer data-domain="playground.archethic.net" src="https://plausible.io/js/script.js">
+      </script>
+    <% end %>
   </head>
   <body class="bg-gray-50 dark:bg-gray-900">
     <%= @inner_content %>

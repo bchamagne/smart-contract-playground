@@ -144,14 +144,22 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
            Crypto.default_curve(),
            scheme_to_proto(uri.scheme)
          ) do
-      {:ok, %{"fee" => uco, "rates" => %{"eur" => eur, "usd" => usd}}} ->
+      {:ok, %{"fee" => uco, "rates" => %{"eur" => eur_rate, "usd" => usd_rate}}} ->
         RemoteData.success(%{
           uco:
             uco
             |> Archethic.Utils.from_bigint()
             |> Float.round(3),
-          eur: Float.round(eur, 3),
-          usd: Float.round(usd, 3)
+          eur:
+            uco
+            |> Kernel.*(eur_rate)
+            |> Archethic.Utils.from_bigint()
+            |> Float.round(3),
+          usd:
+            uco
+            |> Kernel.*(usd_rate)
+            |> Archethic.Utils.from_bigint()
+            |> Float.round(3)
         })
 
       {:error, reason} ->

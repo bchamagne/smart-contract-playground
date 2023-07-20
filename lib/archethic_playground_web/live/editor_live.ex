@@ -127,8 +127,20 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
             socket
           end
 
+        {:error, :invalid_transaction_constraints} ->
+          send(self(), {:console, :error, "Contract's condition 'transaction' failed"})
+          socket
+
+        {:error, :invalid_inherit_constraints} ->
+          send(self(), {:console, :error, "Contract's condition 'inherit' failed"})
+          socket
+
+        {:error, :invalid_oracle_constraints} ->
+          send(self(), {:console, :error, "Contract's condition 'oracle' failed"})
+          socket
+
         {:error, :invalid_triggers_execution} ->
-          send(self(), {:console, :error, "Please select a trigger"})
+          send(self(), {:console, :error, "Trigger is incorrect"})
           socket
 
         {:error, :contract_failure} ->

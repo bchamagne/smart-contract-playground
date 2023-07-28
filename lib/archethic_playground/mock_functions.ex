@@ -2,8 +2,9 @@ defmodule ArchethicPlayground.MockFunctions do
   @moduledoc false
   @behaviour Archethic.Contracts.Interpreter.Library.Common.Chain
   @behaviour Archethic.Contracts.Interpreter.Library.Common.Token
+  @behaviour Archethic.Contracts.Interpreter.Library.Common.Http
 
-  alias ArchethicPlayground.TriggerForm.Mock
+  alias ArchethicPlayground.Mock
 
   def prepare_mocks(mocks) do
     remove_existing_mocks()
@@ -12,7 +13,7 @@ defmodule ArchethicPlayground.MockFunctions do
 
   @impl Archethic.Contracts.Interpreter.Library.Common.Chain
   def get_genesis_address(address) do
-    case Process.get("Chain.get_genesis_address/1_#{address}") do
+    case Process.get({"Chain.get_genesis_address/1", [address]}) do
       nil ->
         log_missing_mock_to_playground_console("Chain.get_genesis_address/1", address)
         raise "missing_mock"
@@ -24,7 +25,7 @@ defmodule ArchethicPlayground.MockFunctions do
 
   @impl Archethic.Contracts.Interpreter.Library.Common.Chain
   def get_first_transaction_address(address) do
-    case Process.get("Chain.get_first_transaction_address/1_#{address}") do
+    case Process.get({"Chain.get_first_transaction_address/1", [address]}) do
       nil ->
         log_missing_mock_to_playground_console("Chain.get_first_transaction_address/1", address)
         raise "missing_mock"
@@ -36,7 +37,7 @@ defmodule ArchethicPlayground.MockFunctions do
 
   @impl Archethic.Contracts.Interpreter.Library.Common.Chain
   def get_genesis_public_key(public_key) do
-    case Process.get("Chain.get_genesis_public_key/1_#{public_key}") do
+    case Process.get({"Chain.get_genesis_public_key/1", [public_key]}) do
       nil ->
         log_missing_mock_to_playground_console("Chain.get_genesis_public_key/1", public_key)
         raise "missing_mock"
@@ -46,11 +47,47 @@ defmodule ArchethicPlayground.MockFunctions do
     end
   end
 
+  @impl Archethic.Contracts.Interpreter.Library.Common.Chain
+  def get_transaction(address) do
+    case Process.get({"Chain.get_transaction/1", [address]}) do
+      nil ->
+        log_missing_mock_to_playground_console("Chain.get_transaction/1", address)
+        raise "missing_mock"
+
+      value ->
+        value
+    end
+  end
+
   @impl Archethic.Contracts.Interpreter.Library.Common.Token
   def fetch_id_from_address(address) do
-    case Process.get("Chain.fetch_id_from_address/1_#{address}") do
+    case Process.get({"Token.fetch_id_from_address/1", [address]}) do
       nil ->
-        log_missing_mock_to_playground_console("Chain.fetch_id_from_address/1", address)
+        log_missing_mock_to_playground_console("Token.fetch_id_from_address/1", address)
+        raise "missing_mock"
+
+      value ->
+        value
+    end
+  end
+
+  @impl Archethic.Contracts.Interpreter.Library.Common.Http
+  def fetch(url) do
+    case Process.get({"Http.fetch/1", [url]}) do
+      nil ->
+        log_missing_mock_to_playground_console("Http.fetch/1", url)
+        raise "missing_mock"
+
+      value ->
+        value
+    end
+  end
+
+  @impl Archethic.Contracts.Interpreter.Library.Common.Http
+  def fetch_many(urls) do
+    case Process.get({"Http.fetch_many/1", [urls]}) do
+      nil ->
+        log_missing_mock_to_playground_console("Http.fetch_many/1", urls)
         raise "missing_mock"
 
       value ->
@@ -59,12 +96,12 @@ defmodule ArchethicPlayground.MockFunctions do
   end
 
   defp add_mock(mock = %Mock{}) do
-    Process.put("#{mock.function}_#{mock.input}", mock.output)
+    Process.put({mock.function, mock.inputs}, mock.output)
   end
 
   defp remove_existing_mocks() do
     Process.get_keys()
-    |> Enum.filter(&is_binary/1)
+    |> Enum.reject(&is_atom/1)
     |> Enum.each(&Process.delete/1)
   end
 

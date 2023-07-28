@@ -97,14 +97,15 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
     {:noreply, assign(socket, :transaction_contract, transaction)}
   end
 
-  def handle_info({:execute_contract, trigger_form, replace_contract?}, socket) do
+  def handle_info({:execute_contract, trigger_form, mocks, replace_contract?}, socket) do
     send(self(), {:console, :clear})
     send(self(), {:console, :info, "Executing trigger: #{trigger_form.trigger}"})
 
     socket =
       case ArchethicPlayground.execute(
              socket.assigns.transaction_contract,
-             trigger_form
+             trigger_form,
+             mocks
            ) do
         {:ok, nil} ->
           send(self(), {:console, :success, "No resulting transaction"})

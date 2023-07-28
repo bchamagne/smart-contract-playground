@@ -22,9 +22,9 @@ defmodule ArchethicPlayground do
       {:error, "Unexpected error #{inspect(error)}"}
   end
 
-  @spec execute(PlaygroundTransaction.t(), TriggerForm.t()) ::
+  @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
           {:ok, PlaygroundTransaction.t() | nil} | {:error, atom()}
-  def execute(transaction_contract, trigger_form) do
+  def execute(transaction_contract, trigger_form, mocks) do
     trigger = deserialize_trigger(trigger_form.trigger)
 
     datetime =
@@ -33,7 +33,7 @@ defmodule ArchethicPlayground do
           trigger_datetime
 
         _ ->
-          get_time_now(trigger_form.mocks)
+          get_time_now(mocks)
       end
 
     maybe_tx =
@@ -42,7 +42,7 @@ defmodule ArchethicPlayground do
         trigger_transaction -> PlaygroundTransaction.to_archethic(trigger_transaction)
       end
 
-    ArchethicPlayground.MockFunctions.prepare_mocks(trigger_form.mocks)
+    ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
          :ok <- check_valid_precondition(trigger, contract, maybe_tx, datetime),
@@ -65,18 +65,7 @@ defmodule ArchethicPlayground do
         DateTime.utc_now()
 
       mock ->
-        case Integer.parse(mock.output) do
-          {int, ""} ->
-            DateTime.from_unix!(int)
-
-          _ ->
-            send(
-              self(),
-              {:console, :warning, "Invalid Time.now/0 value, using current time instead."}
-            )
-
-            DateTime.utc_now()
-        end
+        mock.output
     end
   end
 

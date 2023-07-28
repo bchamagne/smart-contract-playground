@@ -1,0 +1,6 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:public_key]} type="text" label="Public Key" />
+    <.field field={@form[:genesis_public_key]} type="text" label="Genesis Public Key" />
+  </.form>
+</div>

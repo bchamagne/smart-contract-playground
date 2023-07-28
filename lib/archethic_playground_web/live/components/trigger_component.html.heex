@@ -1,7 +1,18 @@
 <div class="flex flex-col h-full overflow-y-auto">
   <.h4 class="uppercase text-center">Contract's trigger</.h4>
-
-  <.form :let={f} for={@form} phx-change="on-form-change" phx-target={@myself}>
+  <!-- mock form  -->
+  <%= if @display_mock_form_modal do %>
+    <.modal max_width="xl" title="Mocks" close_modal_target={@myself}>
+      <.live_component
+        id="form-mock"
+        module={MockFormComponent}
+        on_update={&set_mocks/1}
+        mocks={@mocks}
+      />
+    </.modal>
+  <% end %>
+  <!-- end mock form  -->
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
     <.field
       field={@form[:trigger]}
       type="select"
@@ -12,45 +23,29 @@
     />
     <.card class="mb-2">
       <.card_content category="Mocks" class="p-2">
+        <%= for {m, i} <- Enum.with_index(@mocks) do %>
+          <div class="flex gap-1 my-2 p-1 border border-gray-700 rounded">
+            <div class="w-11/12"><%= m.function %></div>
+            <.icon
+              name={:trash}
+              class="w-1/12 cursor-pointer"
+              phx-click="remove-mock"
+              phx-value-index={i}
+              phx-target={@myself}
+            />
+          </div>
+        <% end %>
         <.button
           label="Add a mock"
           link_type="a"
           to="#"
-          phx-click="add-mock"
+          phx-click="open_modal"
           phx-target={@myself}
           icon={:plus}
           variant="outline"
           size="xs"
           class="w-full"
         />
-
-        <%= for mock_form <- inputs_for f, :mocks do %>
-          <%= hidden_inputs_for(mock_form) %>
-          <div class="flex gap-1 my-2 p-1 border border-gray-700 rounded">
-            <div class="w-11/12 flex flex-col gap-1">
-              <%= select(mock_form, :function, @mock_functions,
-                class: "pc-text-input",
-                placeholder: "Input",
-                prompt: "-- Choose a function --"
-              ) %>
-
-              <%= if String.ends_with?(mock_form[:function].value || "", "/1") do %>
-                <%= text_input(mock_form, :input, class: "pc-text-input", placeholder: "Input") %>
-              <% end %>
-
-              <%= if mock_form[:function].value != nil do %>
-                <%= text_input(mock_form, :output, class: "pc-text-input", placeholder: "Output") %>
-              <% end %>
-            </div>
-            <.icon
-              name={:trash}
-              class="w-1/12 cursor-pointer"
-              phx-click="remove-mock"
-              phx-value-index={mock_form.index}
-              phx-target={@myself}
-            />
-          </div>
-        <% end %>
       </.card_content>
     </.card>
   </.form>
@@ -80,7 +75,8 @@
       color="primary"
       label="Trigger and update contract's transaction"
       phx-target={@myself}
-      phx-click="trigger-stateful"
+      phx-click="trigger"
+      phx-value-stateful="1"
       class="w-1/2"
     />
 
@@ -91,12 +87,11 @@
       color="primary"
       label="Trigger"
       phx-target={@myself}
-      phx-click="trigger-stateless"
+      phx-click="trigger"
+      phx-value-stateful="0"
       class="w-1/2"
     />
   </div>
 
   <div class="flex-1"></div>
-
-
 </div>

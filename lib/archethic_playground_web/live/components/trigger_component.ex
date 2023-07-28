@@ -5,20 +5,31 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
 
   alias ArchethicPlayground.TriggerForm
   alias ArchethicPlayground.Utils
+  alias ArchethicPlaygroundWeb.MockFormComponent
   alias ArchethicPlaygroundWeb.TransactionFormComponent
+
+  def id(), do: "trigger_component"
 
   def mount(socket) do
     socket =
       socket
-      |> assign(:mock_functions, [
-        "Chain.get_genesis_address/1",
-        "Chain.get_first_transaction_address/1",
-        "Chain.get_genesis_public_key/1",
-        "Time.now/0",
-        "Token.fetch_id_from_address/1"
-      ])
+      |> assign(
+        display_mock_form_modal: false,
+
+        # mocks are outside of trigger_form because it's delegated to a child form
+        # and the child needs to do send_update/3
+        mocks: []
+      )
 
     {:ok, assign_form(socket, reset_form())}
+  end
+
+  def set_mocks(mocks) do
+    send_update(self(), __MODULE__,
+      id: id(),
+      mocks: mocks,
+      display_mock_form_modal: false
+    )
   end
 
   def handle_event("on-form-change", params = %{"trigger_form" => trigger_form}, socket) do
@@ -63,37 +74,25 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
     {:noreply, assign_form(socket, form)}
   end
 
-  def handle_event("add-mock", _, socket) do
-    form =
-      socket.assigns.form.source
-      |> TriggerForm.add_empty_mock()
+  def handle_event("open_modal", _, socket) do
+    {:noreply, assign(socket, display_mock_form_modal: true)}
+  end
 
-    {:noreply, assign_form(socket, form)}
+  def handle_event("close_modal", _, socket) do
+    {:noreply, assign(socket, display_mock_form_modal: false)}
   end
 
   def handle_event("remove-mock", %{"index" => index}, socket) do
     index = String.to_integer(index)
-
-    form =
-      socket.assigns.form.source
-      |> TriggerForm.remove_mock_at(index)
-
-    {:noreply, assign_form(socket, form)}
+    mocks = List.delete_at(socket.assigns.mocks, index)
+    {:noreply, assign(socket, :mocks, mocks)}
   end
 
-  def handle_event("trigger-stateful", _, socket) do
+  def handle_event("trigger", params, socket) do
     send(
       self(),
-      {:execute_contract, Ecto.Changeset.apply_changes(socket.assigns.form.source), true}
-    )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("trigger-stateless", _, socket) do
-    send(
-      self(),
-      {:execute_contract, Ecto.Changeset.apply_changes(socket.assigns.form.source), false}
+      {:execute_contract, Ecto.Changeset.apply_changes(socket.assigns.form.source),
+       socket.assigns.mocks, params["stateful"] == "1"}
     )
 
     {:noreply, socket}

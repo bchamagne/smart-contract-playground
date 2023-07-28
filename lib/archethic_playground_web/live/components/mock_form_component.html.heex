@@ -1,0 +1,26 @@
+<div>
+  <.form for={@form} phx-change="on-function-change" phx-target={@myself}>
+    <.field
+      field={@form[:function_index]}
+      options={mock_select_options()}
+      type="select"
+      label="Function to mock"
+      prompt="-- Choose a function --"
+    />
+  </.form>
+
+  <%= if @mock_module != nil do %>
+    <.live_component module={@mock_module} id="form-mock-child" on_update={&set_mock/1} />
+  <% end %>
+
+  <.button
+    label="Validate mock"
+    disabled={@mock == nil}
+    link_type="a"
+    to="#"
+    phx-click="validate"
+    phx-target={@myself}
+    size="xs"
+    class="w-full"
+  />
+</div>

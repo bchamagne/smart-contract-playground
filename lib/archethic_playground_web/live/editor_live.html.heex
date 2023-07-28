@@ -15,7 +15,11 @@
     <%= if not is_nil(@left_panel) do %>
       <div class="dark:bg-gray-900 w-[350px] p-2">
         <%= if @left_panel == "trigger" do %>
-          <.live_component module={TriggerComponent} id="trigger_component" triggers={@triggers} />
+          <.live_component
+            module={TriggerComponent}
+            id={TriggerComponent.id()}
+            triggers={@triggers}
+          />
         <% end %>
         <%= if @left_panel == "deploy" do %>
           <.live_component
@@ -51,7 +55,7 @@
         />
       </div>
     </div>
-    <!-- end center content --> 
+    <!-- end center content -->
 
     <!-- right panel -->
     <%= if not is_nil(@right_panel) do %>

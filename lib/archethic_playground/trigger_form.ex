@@ -3,19 +3,16 @@ defmodule ArchethicPlayground.TriggerForm do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias __MODULE__.Mock
   alias ArchethicPlayground.Transaction
 
   @type t :: %__MODULE__{
           trigger: String.t(),
-          transaction: nil | Transaction.t(),
-          mocks: list(Mock.t())
+          transaction: nil | Transaction.t()
         }
 
   embedded_schema do
     field(:trigger, :string)
     embeds_one(:transaction, Transaction, on_replace: :delete)
-    embeds_many(:mocks, Mock, on_replace: :delete)
   end
 
   @doc false
@@ -28,26 +25,7 @@ defmodule ArchethicPlayground.TriggerForm do
     trigger_form
     |> cast(attrs, [:trigger])
     |> cast_embed(:transaction, with: &Transaction.changeset/2)
-    |> cast_embed(:mocks)
     |> validate_required([:trigger])
-  end
-
-  def add_empty_mock(changeset) do
-    trigger_form = changeset |> apply_changes()
-    mocks = trigger_form.mocks ++ [Mock.new()]
-
-    trigger_form
-    |> change()
-    |> put_embed(:mocks, mocks)
-  end
-
-  def remove_mock_at(changeset, index) do
-    trigger_form = changeset |> apply_changes()
-    mocks = List.delete_at(trigger_form.mocks, index)
-
-    trigger_form
-    |> change()
-    |> put_embed(:mocks, mocks)
   end
 
   def create_transaction(changeset, type) do

@@ -75,8 +75,8 @@ defmodule ArchethicPlayground.MockFunctions do
   def fetch(url) do
     case Process.get({"Http.fetch/1", [url]}) do
       nil ->
-        log_missing_mock_to_playground_console("Http.fetch/1", url)
-        raise "missing_mock"
+        # we autorize normal fetch
+        Archethic.Contracts.Interpreter.Library.Common.HttpImpl.fetch(url)
 
       value ->
         value
@@ -87,8 +87,8 @@ defmodule ArchethicPlayground.MockFunctions do
   def fetch_many(urls) do
     case Process.get({"Http.fetch_many/1", [urls]}) do
       nil ->
-        log_missing_mock_to_playground_console("Http.fetch_many/1", urls)
-        raise "missing_mock"
+        # we autorize normal fetch_many
+        Archethic.Contracts.Interpreter.Library.Common.HttpImpl.fetch_many(urls)
 
       value ->
         value

@@ -1,7 +1,9 @@
 defmodule ArchethicPlaygroundWeb.EditorLive do
   @moduledoc false
 
+  alias ArchethicPlayground.Utils
   alias ArchethicPlayground.Transaction
+  alias ArchethicPlayground.TriggerForm
   alias ArchethicPlaygroundWeb.ConsoleComponent
   alias ArchethicPlaygroundWeb.ContractComponent
   alias ArchethicPlaygroundWeb.DeployComponent
@@ -14,6 +16,9 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   def mount(_params, _opts, socket) do
     code = default_code()
 
+    # we define a random address so we can prefill the trigger transaction recipients
+    random_address = Utils.Address.random() |> Base.encode16()
+
     socket =
       socket
       |> assign(
@@ -24,7 +29,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
         # contract related
         triggers: [],
         transaction_contract:
-          Transaction.new(%{"type" => "contract", "code" => code})
+          Transaction.new(%{
+            "address" => random_address,
+            "type" => "contract",
+            "code" => code
+          })
           |> Ecto.Changeset.apply_changes()
       )
       |> push_event("set-code", %{"code" => code})
@@ -148,6 +157,15 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
           send(self(), {:console, :error, "Contract's execution failed"})
           socket
 
+        {:error, :recipient_not_found_in_trigger_transaction} ->
+          send(
+            self(),
+            {:console, :error,
+             "Matching recipient not found in the trigger transaction (left panel)"}
+          )
+
+          socket
+
         {:error, message} when is_binary(message) ->
           send(self(), {:console, :error, message})
           socket
@@ -169,7 +187,7 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
         triggers_as_string =
           triggers
           |> Map.keys()
-          |> Enum.map(&trigger_to_string/1)
+          |> Enum.map(&TriggerForm.serialize_trigger/1)
 
         {:ok, triggers_as_string}
 
@@ -187,11 +205,6 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
     right_panel = if panel == current_right_panel, do: nil, else: panel
     {current_left_panel, right_panel}
   end
-
-  defp trigger_to_string({:interval, interval}), do: "interval:#{interval}"
-  defp trigger_to_string({:datetime, datetime}), do: "datetime:#{DateTime.to_unix(datetime)}"
-  defp trigger_to_string(:oracle), do: "oracle"
-  defp trigger_to_string(:transaction), do: "transaction"
 
   defp default_code(),
     do: ~S"""

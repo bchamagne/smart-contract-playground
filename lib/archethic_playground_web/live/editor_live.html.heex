@@ -19,6 +19,7 @@
             module={TriggerComponent}
             id={TriggerComponent.id()}
             triggers={@triggers}
+            contract_address={@transaction_contract.address}
           />
         <% end %>
         <%= if @left_panel == "deploy" do %>

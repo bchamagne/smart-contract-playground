@@ -5,6 +5,7 @@ defmodule ArchethicPlayground do
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
   alias Archethic.TransactionChain.Transaction
+  alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
@@ -25,7 +26,8 @@ defmodule ArchethicPlayground do
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
           {:ok, PlaygroundTransaction.t() | nil} | {:error, atom()}
   def execute(transaction_contract, trigger_form, mocks) do
-    trigger = deserialize_trigger(trigger_form.trigger)
+    trigger = TriggerForm.deserialize_trigger(trigger_form.trigger)
+    contract_address = transaction_contract.address
 
     datetime =
       case trigger do
@@ -36,22 +38,68 @@ defmodule ArchethicPlayground do
           get_time_now(mocks)
       end
 
-    maybe_tx =
+    {maybe_tx, maybe_recipient} =
       case trigger_form.transaction do
-        nil -> nil
-        trigger_transaction -> PlaygroundTransaction.to_archethic(trigger_transaction)
+        nil ->
+          {nil, nil}
+
+        trigger_transaction ->
+          tx = PlaygroundTransaction.to_archethic(trigger_transaction)
+
+          case TriggerForm.deserialize_trigger(trigger_form.trigger) do
+            {:transaction, nil, nil} ->
+              # find the recipient matching in the contract
+              recipient =
+                Enum.find(tx.data.recipients, fn
+                  %ArchethicRecipient{address: r_address, action: nil, args: nil} ->
+                    contract_address == Base.encode16(r_address)
+                end)
+
+              if recipient == nil do
+                throw({:error, :recipient_not_found_in_trigger_transaction})
+              end
+
+              {tx, recipient}
+
+            {:transaction, action, args_names} ->
+              arity = if is_list(args_names), do: length(args_names), else: 0
+
+              # find the recipient matching in the contract
+              recipient =
+                Enum.find(tx.data.recipients, fn
+                  %ArchethicRecipient{address: r_address, action: r_action, args: r_args} ->
+                    contract_address == Base.encode16(r_address) &&
+                      action == r_action &&
+                      arity == length(r_args)
+                end)
+
+              if recipient == nil do
+                throw({:error, :recipient_not_found_in_trigger_transaction})
+              end
+
+              {tx, recipient}
+          end
       end
 
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
-         :ok <- check_valid_precondition(trigger, contract, maybe_tx, datetime),
+         :ok <- check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
          {:ok, tx_or_nil} <-
-           Contracts.execute_trigger(trigger, contract, maybe_tx, time_now: datetime),
+           Contracts.execute_trigger(
+             trigger,
+             contract,
+             maybe_tx,
+             maybe_recipient,
+             time_now: datetime
+           ),
          :ok <- check_valid_postcondition(contract, tx_or_nil, datetime),
          tx_or_nil <- PlaygroundTransaction.from_archethic(tx_or_nil) do
       {:ok, tx_or_nil}
     end
+  catch
+    {:error, reason} ->
+      {:error, reason}
   end
 
   defp get_time_now(mocks) do
@@ -69,31 +117,14 @@ defmodule ArchethicPlayground do
     end
   end
 
-  defp deserialize_trigger("oracle"), do: :oracle
-  defp deserialize_trigger("transaction"), do: :transaction
-
-  defp deserialize_trigger(trigger_str) do
-    [key, rest] = String.split(trigger_str, ":")
-
-    case key do
-      "interval" ->
-        {:interval, rest}
-
-      "datetime" ->
-        {:datetime,
-         rest
-         |> String.to_integer()
-         |> DateTime.from_unix!()}
-    end
-  end
-
   defp check_valid_precondition(
          :oracle,
          contract = %Contract{},
          tx = %Transaction{},
+         nil,
          datetime
        ) do
-    if Contracts.valid_condition?(:oracle, contract, tx, datetime) do
+    if Contracts.valid_condition?(:oracle, contract, tx, nil, datetime) do
       :ok
     else
       {:error, :invalid_oracle_constraints}
@@ -101,26 +132,27 @@ defmodule ArchethicPlayground do
   end
 
   defp check_valid_precondition(
-         :transaction,
+         condition_type = {:transaction, _, _},
          contract = %Contract{},
          tx = %Transaction{},
+         recipient = %ArchethicRecipient{},
          datetime
        ) do
-    if Contracts.valid_condition?(:transaction, contract, tx, datetime) do
+    if Contracts.valid_condition?(condition_type, contract, tx, recipient, datetime) do
       :ok
     else
       {:error, :invalid_transaction_constraints}
     end
   end
 
-  defp check_valid_precondition(_, _, _, _), do: :ok
+  defp check_valid_precondition(_, _, _, _, _), do: :ok
 
   defp check_valid_postcondition(
          contract = %Contract{},
          next_tx = %Transaction{},
          datetime
        ) do
-    if Contracts.valid_condition?(:inherit, contract, next_tx, datetime) do
+    if Contracts.valid_condition?(:inherit, contract, next_tx, nil, datetime) do
       :ok
     else
       {:error, :invalid_inherit_constraints}

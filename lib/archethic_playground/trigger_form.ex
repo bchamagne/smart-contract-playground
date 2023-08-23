@@ -28,22 +28,7 @@ defmodule ArchethicPlayground.TriggerForm do
     |> validate_required([:trigger])
   end
 
-  def create_transaction(changeset, type) do
-    transaction =
-      case type do
-        "oracle" ->
-          Transaction.new(%{
-            "type" => "oracle",
-            "content" => Jason.encode!(%{"uco" => %{"usd" => "0.934", "eur" => "0.911"}})
-          })
-
-        "data" ->
-          Transaction.new(%{"type" => "data"})
-
-        _ ->
-          Transaction.new()
-      end
-
+  def set_transaction(changeset, transaction) do
     changeset
     |> put_embed(:transaction, transaction)
   end
@@ -52,4 +37,35 @@ defmodule ArchethicPlayground.TriggerForm do
     changeset
     |> put_embed(:transaction, nil)
   end
+
+  def deserialize_trigger("oracle"), do: :oracle
+  def deserialize_trigger("transaction"), do: {:transaction, nil, nil}
+
+  def deserialize_trigger(trigger_str) do
+    [key, rest] = String.split(trigger_str, ":")
+
+    case key do
+      "interval" ->
+        {:interval, rest}
+
+      "datetime" ->
+        {:datetime,
+         rest
+         |> String.to_integer()
+         |> DateTime.from_unix!()}
+
+      "transaction" ->
+        [action, joined_args] = Regex.run(~r/(\w+)\(([\w, ]+)\)/, rest, capture: :all_but_first)
+        args_names = joined_args |> String.split(",") |> Enum.map(&String.trim/1)
+        {:transaction, action, args_names}
+    end
+  end
+
+  def serialize_trigger({:interval, interval}), do: "interval:#{interval}"
+  def serialize_trigger({:datetime, datetime}), do: "datetime:#{DateTime.to_unix(datetime)}"
+  def serialize_trigger(:oracle), do: "oracle"
+  def serialize_trigger({:transaction, nil, nil}), do: "transaction"
+
+  def serialize_trigger({:transaction, action, args_names}),
+    do: "transaction:#{action}(#{Enum.join(args_names, ",")})"
 end

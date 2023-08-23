@@ -3,6 +3,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
 
   use ArchethicPlaygroundWeb, :live_component
 
+  alias ArchethicPlayground.Transaction
   alias ArchethicPlayground.TriggerForm
   alias ArchethicPlayground.Utils
   alias ArchethicPlaygroundWeb.MockFormComponent
@@ -38,14 +39,46 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
     # when the trigger change we reset the form
     form =
       if params["_target"] == ["trigger_form", "trigger"] do
-        case trigger_form["trigger"] do
-          "transaction" ->
-            TriggerForm.changeset(previous_trigger_form, trigger_form)
-            |> TriggerForm.create_transaction("data")
+        trigger = TriggerForm.deserialize_trigger(trigger_form["trigger"])
 
-          "oracle" ->
+        random_address = Utils.Address.random() |> Base.encode16()
+
+        case trigger do
+          :oracle ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)
-            |> TriggerForm.create_transaction("oracle")
+            |> TriggerForm.set_transaction(
+              Transaction.new(%{
+                "type" => "oracle",
+                "address" => random_address,
+                "content" => Jason.encode!(%{"uco" => %{"usd" => "0.934", "eur" => "0.911"}})
+              })
+            )
+
+          {:transaction, action, args_names} ->
+            TriggerForm.changeset(previous_trigger_form, trigger_form)
+            |> TriggerForm.set_transaction(
+              Transaction.new(%{
+                "type" => "data",
+                "address" => random_address,
+                "recipients" => [
+                  %{
+                    "address" => socket.assigns.contract_address,
+                    "action" =>
+                      if action != nil do
+                        action
+                      else
+                        ""
+                      end,
+                    "args_json" =>
+                      if args_names != nil do
+                        Jason.encode!(args_names)
+                      else
+                        ""
+                      end
+                  }
+                ]
+              })
+            )
 
           _ ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)

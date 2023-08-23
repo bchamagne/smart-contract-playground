@@ -10,6 +10,7 @@ defmodule ArchethicPlayground.Transaction do
   alias Archethic.Crypto
   alias Archethic.TransactionChain.Transaction, as: ArchethicTransaction
   alias Archethic.TransactionChain.TransactionData
+  alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient
   alias ArchethicPlayground.Utils
 
   @type t :: %__MODULE__{
@@ -178,8 +179,22 @@ defmodule ArchethicPlayground.Transaction do
           }
         },
         recipients:
-          Enum.map(t.recipients, fn r ->
-            hex_to_bin(r.address)
+          Enum.map(t.recipients, fn
+            %Recipient{address: address, action: "", args_json: ""} ->
+              %ArchethicRecipient{
+                address: hex_to_bin(address)
+              }
+
+            %Recipient{address: address, action: action, args_json: args_json} ->
+              %ArchethicRecipient{
+                address: hex_to_bin(address),
+                action: action,
+                args:
+                  case Jason.decode(args_json) do
+                    {:ok, args} when is_list(args) -> args
+                    _ -> []
+                  end
+              }
           end),
         ownerships:
           Enum.map(t.ownerships, fn o ->
@@ -242,8 +257,18 @@ defmodule ArchethicPlayground.Transaction do
           }
         end),
       recipients:
-        Enum.map(t.data.recipients, fn r ->
-          %Recipient{address: bin_to_hex(r)}
+        Enum.map(t.data.recipients, fn
+          %ArchethicRecipient{address: address, action: nil, args: nil} ->
+            %Recipient{
+              address: bin_to_hex(address)
+            }
+
+          %ArchethicRecipient{address: address, action: action, args: args} ->
+            %Recipient{
+              address: bin_to_hex(address),
+              action: action,
+              args_json: Jason.encode!(args)
+            }
         end)
     }
   end

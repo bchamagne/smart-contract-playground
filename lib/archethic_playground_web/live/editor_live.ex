@@ -130,6 +130,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
           )
 
           if replace_contract? do
+            # hack:
+            # we give the transaction the same address as previous so we can chain without having to
+            # update the recipients on the trigger form
+            tx = %Transaction{tx | address: socket.assigns.transaction_contract.address}
+
             socket
             |> assign(transaction_contract: tx)
             |> push_event("set-code", %{"code" => tx.code})

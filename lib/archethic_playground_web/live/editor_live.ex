@@ -106,7 +106,7 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
     {:noreply, assign(socket, :transaction_contract, transaction)}
   end
 
-  def handle_info({:execute_contract, trigger_form, mocks, replace_contract?}, socket) do
+  def handle_info({:execute_trigger, trigger_form, mocks, replace_contract?}, socket) do
     send(self(), {:console, :clear})
     send(self(), {:console, :info, "Executing trigger: #{trigger_form.trigger}"})
 
@@ -162,13 +162,8 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
           send(self(), {:console, :error, "Contract's execution failed"})
           socket
 
-        {:error, :recipient_not_found_in_trigger_transaction} ->
-          send(
-            self(),
-            {:console, :error,
-             "Matching recipient not found in the trigger transaction (left panel)"}
-          )
-
+        {:error, {:recipient_argument_is_not_json, value}} ->
+          send(self(), {:console, :error, "A recipient's argument is not valid JSON: #{value}"})
           socket
 
         {:error, message} when is_binary(message) ->

@@ -21,33 +21,49 @@
       prompt="-- Choose a trigger --"
       help_text="Triggers are extracted from the code"
     />
-    <.card class="mb-2">
-      <.card_content category="Mocks" class="p-2">
-        <%= for {m, i} <- Enum.with_index(@mocks) do %>
-          <div class="flex gap-1 my-2 p-1 border border-gray-700 rounded">
-            <div class="w-11/12"><%= m.function %></div>
-            <.icon
-              name={:trash}
-              class="w-1/12 cursor-pointer"
-              phx-click="remove-mock"
-              phx-value-index={i}
-              phx-target={@myself}
-            />
-          </div>
+
+    <%= if input_value(@form, :recipient) != nil do %>
+      <%= for recipient_form <- inputs_for @form, :recipient do %>
+        <%= hidden_inputs_for(recipient_form) %>
+        <%= for keyvalue_form <- inputs_for recipient_form, :args do %>
+          <%= hidden_inputs_for(keyvalue_form) %>
+
+          <.field type="hidden" field={keyvalue_form[:key]} />
+          <.field
+            type="text"
+            field={keyvalue_form[:value]}
+            label={String.capitalize(input_value(keyvalue_form, :key)) <> "*"}
+          />
         <% end %>
-        <.button
-          label="Add a mock"
-          link_type="a"
-          to="#"
-          phx-click="open_modal"
+      <% end %>
+    <% end %>
+
+    <div class="uppercase text-center text-gray-300">
+      Mocks
+    </div>
+    <%= for {m, i} <- Enum.with_index(@mocks) do %>
+      <div class="flex gap-1 my-2 p-1 border border-gray-700 text-gray-400 rounded">
+        <div class="w-11/12"><%= m.function %></div>
+        <.icon
+          name={:trash}
+          class="w-1/12 cursor-pointer"
+          phx-click="remove-mock"
+          phx-value-index={i}
           phx-target={@myself}
-          icon={:plus}
-          variant="outline"
-          size="xs"
-          class="w-full"
         />
-      </.card_content>
-    </.card>
+      </div>
+    <% end %>
+    <.button
+      label="Add a mock"
+      link_type="a"
+      to="#"
+      phx-click="open_modal"
+      phx-target={@myself}
+      icon={:plus}
+      variant="outline"
+      size="xs"
+      class="w-full mt-2 mb-6"
+    />
   </.form>
 
   <%= if @form[:transaction].value != nil do %>

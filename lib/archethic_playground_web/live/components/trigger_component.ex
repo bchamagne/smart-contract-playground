@@ -5,6 +5,8 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
 
   alias ArchethicPlayground.Transaction
   alias ArchethicPlayground.TriggerForm
+  alias ArchethicPlayground.RecipientForm
+  alias ArchethicPlayground.KeyValue
   alias ArchethicPlayground.Utils
   alias ArchethicPlaygroundWeb.MockFormComponent
   alias ArchethicPlaygroundWeb.TransactionFormComponent
@@ -46,6 +48,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
         case trigger do
           :oracle ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)
+            |> TriggerForm.remove_recipient()
             |> TriggerForm.set_transaction(
               Transaction.new(%{
                 "type" => "oracle",
@@ -54,34 +57,33 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
               })
             )
 
-          {:transaction, action, args_names} ->
+          {:transaction, nil, nil} ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)
+            |> TriggerForm.remove_recipient()
             |> TriggerForm.set_transaction(
               Transaction.new(%{
                 "type" => "data",
-                "address" => random_address,
-                "recipients" => [
-                  %{
-                    "address" => socket.assigns.contract_address,
-                    "action" =>
-                      if action != nil do
-                        action
-                      else
-                        ""
-                      end,
-                    "args_json" =>
-                      if args_names != nil do
-                        Jason.encode!(args_names)
-                      else
-                        ""
-                      end
-                  }
-                ]
+                "address" => random_address
+              })
+            )
+
+          {:transaction, action, args_names} ->
+            TriggerForm.changeset(previous_trigger_form, trigger_form)
+            |> TriggerForm.set_recipient(%RecipientForm{
+              address: socket.assigns.contract_address,
+              action: action,
+              args: Enum.map(args_names, &%KeyValue{key: &1, value: ""})
+            })
+            |> TriggerForm.set_transaction(
+              Transaction.new(%{
+                "type" => "data",
+                "address" => random_address
               })
             )
 
           _ ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)
+            |> TriggerForm.remove_recipient()
             |> TriggerForm.remove_transaction()
         end
       else
@@ -122,10 +124,11 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
   end
 
   def handle_event("trigger", params, socket) do
+    trigger_form = Ecto.Changeset.apply_changes(socket.assigns.form.source)
+
     send(
       self(),
-      {:execute_contract, Ecto.Changeset.apply_changes(socket.assigns.form.source),
-       socket.assigns.mocks, params["stateful"] == "1"}
+      {:execute_trigger, trigger_form, socket.assigns.mocks, params["stateful"] == "1"}
     )
 
     {:noreply, socket}

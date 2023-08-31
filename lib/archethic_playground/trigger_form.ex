@@ -4,14 +4,17 @@ defmodule ArchethicPlayground.TriggerForm do
   import Ecto.Changeset
 
   alias ArchethicPlayground.Transaction
+  alias ArchethicPlayground.RecipientForm
 
   @type t :: %__MODULE__{
           trigger: String.t(),
-          transaction: nil | Transaction.t()
+          transaction: nil | Transaction.t(),
+          recipient: nil | RecipientForm.t()
         }
 
   embedded_schema do
     field(:trigger, :string)
+    embeds_one(:recipient, RecipientForm, on_replace: :delete)
     embeds_one(:transaction, Transaction, on_replace: :delete)
   end
 
@@ -25,7 +28,13 @@ defmodule ArchethicPlayground.TriggerForm do
     trigger_form
     |> cast(attrs, [:trigger])
     |> cast_embed(:transaction, with: &Transaction.changeset/2)
+    |> cast_embed(:recipient)
     |> validate_required([:trigger])
+  end
+
+  def set_recipient(changeset, recipient) do
+    changeset
+    |> put_embed(:recipient, recipient)
   end
 
   def set_transaction(changeset, transaction) do
@@ -36,6 +45,11 @@ defmodule ArchethicPlayground.TriggerForm do
   def remove_transaction(changeset) do
     changeset
     |> put_embed(:transaction, nil)
+  end
+
+  def remove_recipient(changeset) do
+    changeset
+    |> put_embed(:recipient, nil)
   end
 
   def deserialize_trigger("oracle"), do: :oracle

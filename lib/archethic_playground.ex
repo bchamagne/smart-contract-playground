@@ -9,6 +9,7 @@ defmodule ArchethicPlayground do
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
+  alias ArchethicPlayground.RecipientForm
 
   require Logger
 
@@ -45,40 +46,9 @@ defmodule ArchethicPlayground do
 
         trigger_transaction ->
           tx = PlaygroundTransaction.to_archethic(trigger_transaction)
+          recipient = RecipientForm.to_archethic(trigger_form.recipient)
 
-          case TriggerForm.deserialize_trigger(trigger_form.trigger) do
-            {:transaction, nil, nil} ->
-              # find the recipient matching in the contract
-              recipient =
-                Enum.find(tx.data.recipients, fn
-                  %ArchethicRecipient{address: r_address, action: nil, args: nil} ->
-                    contract_address == Base.encode16(r_address)
-                end)
-
-              if recipient == nil do
-                throw({:error, :recipient_not_found_in_trigger_transaction})
-              end
-
-              {tx, recipient}
-
-            {:transaction, action, args_names} ->
-              arity = if is_list(args_names), do: length(args_names), else: 0
-
-              # find the recipient matching in the contract
-              recipient =
-                Enum.find(tx.data.recipients, fn
-                  %ArchethicRecipient{address: r_address, action: r_action, args: r_args} ->
-                    contract_address == Base.encode16(r_address) &&
-                      action == r_action &&
-                      arity == length(r_args)
-                end)
-
-              if recipient == nil do
-                throw({:error, :recipient_not_found_in_trigger_transaction})
-              end
-
-              {tx, recipient}
-          end
+          {tx, recipient}
       end
 
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)

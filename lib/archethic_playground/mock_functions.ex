@@ -11,6 +11,12 @@ defmodule ArchethicPlayground.MockFunctions do
     Enum.each(mocks, &add_mock/1)
   end
 
+  # this is not mockable
+  @impl Archethic.Contracts.Interpreter.Library.Common.Chain
+  def get_burn_address() do
+    <<0::16, 0::256>> |> Base.encode16()
+  end
+
   @impl Archethic.Contracts.Interpreter.Library.Common.Chain
   def get_genesis_address(address) do
     case Process.get({"Chain.get_genesis_address/1", [address]}) do

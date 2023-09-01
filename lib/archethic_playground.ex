@@ -28,7 +28,6 @@ defmodule ArchethicPlayground do
           {:ok, PlaygroundTransaction.t() | nil} | {:error, atom()}
   def execute(transaction_contract, trigger_form, mocks) do
     trigger = TriggerForm.deserialize_trigger(trigger_form.trigger)
-    contract_address = transaction_contract.address
 
     datetime =
       case trigger do

@@ -27,7 +27,17 @@ defmodule ArchethicPlayground do
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
           {:ok, PlaygroundTransaction.t() | nil} | {:error, atom()}
   def execute(transaction_contract, trigger_form, mocks) do
-    trigger = TriggerForm.deserialize_trigger(trigger_form.trigger)
+    trigger =
+      TriggerForm.deserialize_trigger(trigger_form.trigger)
+      |> then(fn
+        {:transaction, action, args_names} when not is_nil(action) and not is_nil(args_names) ->
+          # convert the trigger to archethic format
+          # (the opposite of what's done in parse_and_get_triggers/1)
+          {:transaction, action, length(args_names)}
+
+        other ->
+          other
+      end)
 
     datetime =
       case trigger do

@@ -186,7 +186,15 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
       {:ok, %Archethic.Contracts.Contract{triggers: triggers}} ->
         triggers_as_string =
           triggers
-          |> Map.keys()
+          |> Enum.map(fn
+            {{:transaction, action, arity}, %{args: args_names}}
+            when not is_nil(action) and not is_nil(arity) ->
+              # we get the args_names to be able to put labels on the inputs
+              {:transaction, action, args_names}
+
+            {trigger_key, _} ->
+              trigger_key
+          end)
           |> Enum.map(&TriggerForm.serialize_trigger/1)
 
         {:ok, triggers_as_string}

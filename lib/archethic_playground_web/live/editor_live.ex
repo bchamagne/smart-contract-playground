@@ -218,9 +218,9 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
     do: ~S"""
     @version 1
 
-    condition transaction: []
+    condition triggered_by: transaction, as: []
     actions triggered_by: transaction do
-      Contract.set_content("Hello world!")
+      Contract.set_content "Hello world!"
     end
     """
 end

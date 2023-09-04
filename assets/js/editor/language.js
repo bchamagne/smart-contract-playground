@@ -66,11 +66,21 @@ export async function setLanguage(monaco) {
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Actions triggered at the given timestamp'
         },
+
+        {
+          label: 'actions triggered_by oracle',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: [
+            'condition triggered_by: oracle, as: []',
+            'actions triggered_by: oracle do', '\t', 'end'].join('\n'),
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Actions triggered at the given timestamp'
+        },
         {
           label: 'actions triggered_by transaction',
           kind: monaco.languages.CompletionItemKind.Snippet,
           insertText: [
-            'condition transaction: []',
+            'condition triggered_by: transaction, as: []',
             'actions triggered_by: transaction do', '\t', 'end'].join('\n'),
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Actions triggered by an incoming transaction'
@@ -79,7 +89,7 @@ export async function setLanguage(monaco) {
           label: 'actions triggered_by transaction on',
           kind: monaco.languages.CompletionItemKind.Snippet,
           insertText: [
-            'condition transaction, on: ${1:function_name}(${2}), as: []',
+            'condition triggered_by: transaction, on: ${1:function_name}(${2}), as: []',
             'actions triggered_by: transaction, on: ${1:function_name}(${2}) do', '\t', 'end'].join('\n'),
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Actions triggered by an incoming transaction with a named action'

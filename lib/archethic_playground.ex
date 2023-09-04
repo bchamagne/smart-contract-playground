@@ -64,7 +64,7 @@ defmodule ArchethicPlayground do
     with {:ok, contract} <- parse(transaction_contract),
          :ok <- check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
          {:ok, tx_or_nil} <-
-           Contracts.execute_trigger(
+           execute_trigger(
              trigger,
              contract,
              maybe_tx,
@@ -78,6 +78,30 @@ defmodule ArchethicPlayground do
   catch
     {:error, reason} ->
       {:error, reason}
+  end
+
+  # we execute the code in a task to ensure clean state on every run
+  # (some functions such as HTTP use the process dictionnary)
+  defp execute_trigger(trigger, contract, maybe_tx, maybe_recipient, opts) do
+    task =
+      Task.Supervisor.async_nolink(ArchethicPlaygroundWeb.TaskSupervisor, fn ->
+        Contracts.execute_trigger(
+          trigger,
+          contract,
+          maybe_tx,
+          maybe_recipient,
+          opts
+        )
+      end)
+
+    # 5s to execute or raise
+    case Task.yield(task, 5000) || Task.shutdown(task) do
+      {:ok, reply} ->
+        reply
+
+      nil ->
+        {:error, :timeout}
+    end
   end
 
   defp get_time_now(mocks) do

@@ -69,8 +69,17 @@ defmodule ArchethicPlayground.TriggerForm do
          |> DateTime.from_unix!()}
 
       "transaction" ->
-        [action, joined_args] = Regex.run(~r/(\w+)\(([\w, ]+)\)/, rest, capture: :all_but_first)
-        args_names = joined_args |> String.split(",") |> Enum.map(&String.trim/1)
+        [action, joined_args] = Regex.run(~r/(\w+)\(([\w, ]*)\)/, rest, capture: :all_but_first)
+
+        args_names =
+          case joined_args do
+            "" ->
+              []
+
+            _ ->
+              joined_args |> String.split(",") |> Enum.map(&String.trim/1)
+          end
+
         {:transaction, action, args_names}
     end
   end

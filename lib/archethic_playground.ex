@@ -5,7 +5,6 @@ defmodule ArchethicPlayground do
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
   alias Archethic.TransactionChain.Transaction
-  alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
@@ -114,7 +113,7 @@ defmodule ArchethicPlayground do
          condition_type = {:transaction, _, _},
          contract = %Contract{},
          tx = %Transaction{},
-         recipient = %ArchethicRecipient{},
+         recipient,
          datetime
        ) do
     if Contracts.valid_condition?(condition_type, contract, tx, recipient, datetime) do

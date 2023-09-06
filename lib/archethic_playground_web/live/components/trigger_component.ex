@@ -41,7 +41,15 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
     # when the trigger change we reset the form
     form =
       if params["_target"] == ["trigger_form", "trigger"] do
-        trigger = TriggerForm.deserialize_trigger(trigger_form["trigger"])
+        trigger =
+          case trigger_form["trigger"] do
+            "" ->
+              # this is the "-- Choose a trigger --" option
+              nil
+
+            trigger_str ->
+              TriggerForm.deserialize_trigger(trigger_str)
+          end
 
         random_address = Utils.Address.random() |> Base.encode16()
 

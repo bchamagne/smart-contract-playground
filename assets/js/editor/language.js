@@ -14,7 +14,7 @@ export async function setLanguage(monaco) {
           ]
         ],
         [
-          /\b(condition|actions)\b/,
+          /\b(condition|actions|export|fun)\b/,
           [
             'keyword.archethicDeclaration',
           ]

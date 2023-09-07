@@ -7,9 +7,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   alias ArchethicPlaygroundWeb.ConsoleComponent
   alias ArchethicPlaygroundWeb.ContractComponent
   alias ArchethicPlaygroundWeb.DeployComponent
+  alias ArchethicPlaygroundWeb.FunctionComponent
   alias ArchethicPlaygroundWeb.HeaderComponent
   alias ArchethicPlaygroundWeb.SidebarComponent
   alias ArchethicPlaygroundWeb.TriggerComponent
+  alias Archethic.Contracts.Contract
 
   use ArchethicPlaygroundWeb, :live_view
 
@@ -28,6 +30,7 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
         console_messages: [],
         # contract related
         triggers: [],
+        functions: [],
         transaction_contract:
           Transaction.new(%{
             "address" => random_address,
@@ -75,21 +78,25 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
 
     transaction_contract = %Transaction{socket.assigns.transaction_contract | code: code}
 
-    triggers =
-      case parse_and_get_triggers(transaction_contract) do
-        {:ok, triggers} ->
-          triggers
+    {triggers, functions} =
+      case ArchethicPlayground.parse(transaction_contract) do
+        {:ok, contract} ->
+          {get_triggers(contract), get_public_functions(contract)}
 
         {:error, message} ->
           send(self(), {:console, :error, message})
-          []
+          {[], []}
       end
 
-    socket =
-      socket
-      |> assign(triggers: triggers, transaction_contract: transaction_contract)
+    # maybe it'd be good to store the contract as well
 
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> assign(
+       triggers: triggers,
+       functions: functions,
+       transaction_contract: transaction_contract
+     )}
   end
 
   def handle_info(:reset_transaction_contract, socket) do
@@ -104,6 +111,28 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
 
   def handle_info({:set_transaction_contract, transaction}, socket) do
     {:noreply, assign(socket, :transaction_contract, transaction)}
+  end
+
+  def handle_info({:execute_function, function_name, args_values}, socket) do
+    send(self(), {:console, :clear})
+    send(self(), {:console, :info, "Executing function: #{function_name}/#{length(args_values)}"})
+
+    case ArchethicPlayground.execute_function(
+           socket.assigns.transaction_contract,
+           function_name,
+           args_values
+         ) do
+      {:ok, result} ->
+        send(self(), {:console, :success, "Result: #{inspect(result)}"})
+
+      {:error, :function_failure} ->
+        send(self(), {:console, :error, "Function failed"})
+
+      {:error, :timeout} ->
+        send(self(), {:console, :error, "Function timed-out"})
+    end
+
+    {:noreply, socket}
   end
 
   def handle_info({:execute_trigger, trigger_form, mocks, replace_contract?}, socket) do
@@ -181,27 +210,29 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   #  | .__/|_|  |_| \_/ \__,_|\__\___|
   #  |_|
 
-  defp parse_and_get_triggers(code) do
-    case ArchethicPlayground.parse(code) do
-      {:ok, %Archethic.Contracts.Contract{triggers: triggers}} ->
-        triggers_as_string =
-          triggers
-          |> Enum.map(fn
-            {{:transaction, action, arity}, %{args: args_names}}
-            when not is_nil(action) and not is_nil(arity) ->
-              # we get the args_names to be able to put labels on the inputs
-              {:transaction, action, args_names}
+  defp get_triggers(%Contract{triggers: triggers}) do
+    triggers
+    |> Enum.map(fn
+      {{:transaction, action, arity}, %{args: args_names}}
+      when not is_nil(action) and not is_nil(arity) ->
+        # we replace the arity by args_names to be able to put labels on the inputs
+        {:transaction, action, args_names}
 
-            {trigger_key, _} ->
-              trigger_key
-          end)
-          |> Enum.map(&TriggerForm.serialize_trigger/1)
+      {trigger_key, _} ->
+        trigger_key
+    end)
+    |> Enum.map(&TriggerForm.serialize_trigger/1)
+  end
 
-        {:ok, triggers_as_string}
+  defp get_public_functions(%Contract{functions: functions}) do
+    functions
+    |> Enum.reduce([], fn
+      {{name, _arity}, %{args: args_names, visibility: :public}}, acc ->
+        [{name, args_names} | acc]
 
-      {:error, message} ->
-        {:error, message}
-    end
+      _, acc ->
+        acc
+    end)
   end
 
   defp do_toggle_panels({"left", panel}, {current_left_panel, current_right_panel}) do

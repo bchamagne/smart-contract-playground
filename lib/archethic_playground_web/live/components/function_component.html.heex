@@ -1,0 +1,31 @@
+<div class="flex flex-col h-full overflow-y-auto">
+  <.h4 class="uppercase text-center">Contract's public functions</.h4>
+
+  <.form
+    :let={f}
+    for={@form}
+    phx-change="on-form-change"
+    phx-submit="on-form-submit"
+    phx-target={@myself}
+  >
+    <.field
+      type="select"
+      prompt="-- Choose a function --"
+      field={@form[:function]}
+      options={Enum.map(@functions, &serialize_function/1)}
+      label="Function*"
+      help_text="Public functions are extracted from the code"
+    />
+
+    <div :for={{keyvalue, i} <- Enum.with_index(input_value(@form, :args))}>
+      <.field
+        type="text"
+        name={"args[#{i}][value]"}
+        value={keyvalue.value}
+        label={String.capitalize(keyvalue.key)}
+      />
+    </div>
+
+    <.button type="submit" label="Execute" disabled={input_value(@form, :function) == ""} />
+  </.form>
+</div>

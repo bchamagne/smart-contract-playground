@@ -23,6 +23,25 @@ defmodule ArchethicPlayground do
       {:error, "Unexpected error #{inspect(error)}"}
   end
 
+  @spec execute_function(
+          contract_tx :: PlaygroundTransaction.t(),
+          function_name :: String.t(),
+          args_values :: list(any())
+        ) ::
+          {:ok, any()}
+          | {:error, :function_failure}
+          | {:error, :function_does_not_exist}
+          | {:error, :function_is_private}
+          | {:error, :timeout}
+  def execute_function(
+        contract_tx,
+        function_name,
+        args_values
+      ) do
+    {:ok, contract} = parse(contract_tx)
+    Contracts.execute_function(contract, function_name, args_values)
+  end
+
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
           {:ok, PlaygroundTransaction.t() | nil} | {:error, atom()}
   def execute(transaction_contract, trigger_form, mocks) do

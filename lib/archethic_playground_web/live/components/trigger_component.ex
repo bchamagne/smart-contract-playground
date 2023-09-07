@@ -44,7 +44,7 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
         trigger =
           case trigger_form["trigger"] do
             "" ->
-              # this is the "-- Choose a trigger --" option
+              # this is the prompt "-- Choose a trigger --" option
               nil
 
             trigger_str ->

@@ -8,6 +8,8 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
   alias Archethic.Crypto
   alias Archethic.Utils.Regression.Playbook
 
+  def id(), do: "deploy_component"
+
   def mount(socket) do
     endpoints = list_endpoints()
     default_endpoint = List.first(endpoints)

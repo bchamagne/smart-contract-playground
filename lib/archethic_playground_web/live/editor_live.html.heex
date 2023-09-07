@@ -22,10 +22,18 @@
             contract_address={@transaction_contract.address}
           />
         <% end %>
+        <%= if @left_panel == "function" do %>
+          <.live_component
+            module={FunctionComponent}
+            id={FunctionComponent.id()}
+            functions={@functions}
+            transaction={@transaction_contract}
+          />
+        <% end %>
         <%= if @left_panel == "deploy" do %>
           <.live_component
             module={DeployComponent}
-            id="deploy_component"
+            id={DeployComponent.id()}
             transaction={@transaction_contract}
           />
         <% end %>

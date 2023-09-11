@@ -3,6 +3,7 @@ defmodule ArchethicPlayground.RecipientForm do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias ArchethicPlayground.Utils.Json
   alias ArchethicPlayground.KeyValue
   alias Archethic.TransactionChain.TransactionData.Recipient
 
@@ -33,18 +34,7 @@ defmodule ArchethicPlayground.RecipientForm do
     %Recipient{
       address: form.address,
       action: form.action,
-      args:
-        Enum.map(form.args, fn keyvalue ->
-          # if it's json, we decode it
-          # if it isn't we just treat it as a string
-          case Jason.decode(keyvalue.value) do
-            {:ok, term} ->
-              term
-
-            {:error, _} ->
-              keyvalue.value
-          end
-        end)
+      args: Enum.map(form.args, &Json.maybe_decode(&1.value))
     }
   end
 end

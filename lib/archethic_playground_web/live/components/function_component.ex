@@ -3,6 +3,7 @@ defmodule ArchethicPlaygroundWeb.FunctionComponent do
 
   use ArchethicPlaygroundWeb, :live_component
 
+  alias ArchethicPlayground.Utils.Json
   alias ArchethicPlayground.KeyValue
 
   def id(), do: "function_component"
@@ -68,17 +69,7 @@ defmodule ArchethicPlaygroundWeb.FunctionComponent do
           args
           |> Map.values()
           |> Enum.flat_map(&Map.values/1)
-          |> Enum.map(fn value ->
-            # if it's json, we decode it
-            # if it isn't we just treat it as a string
-            case Jason.decode(value) do
-              {:ok, term} ->
-                term
-
-              {:error, _} ->
-                value
-            end
-          end)
+          |> Enum.map(&Json.maybe_decode/1)
       end
 
     {function, _args_names} = deserialize_function(function_str)

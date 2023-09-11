@@ -55,13 +55,14 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent do
 
   defp mock_modules() do
     [
-      __MODULE__.ChainGetGenesisAddress1,
       __MODULE__.ChainGetFirstTransactionAddress1,
+      __MODULE__.ChainGetGenesisAddress1,
       __MODULE__.ChainGetGenesisPublicKey1,
       __MODULE__.ChainGetTransaction1,
-      __MODULE__.TimeNow0,
+      __MODULE__.ContractCallFunction3,
       __MODULE__.HttpFetch1,
       __MODULE__.HttpFetchMany1,
+      __MODULE__.TimeNow0,
       __MODULE__.TokenFetchIdFromAddress1
     ]
   end

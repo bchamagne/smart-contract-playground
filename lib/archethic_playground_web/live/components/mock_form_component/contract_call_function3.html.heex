@@ -1,0 +1,37 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:address]} type="text" label="Contract's address" />
+    <.field field={@form[:function]} type="text" label="Function" />
+
+    <hr style="width: 80%; border: 1px dashed rgb(75 85 99); margin: 1em auto" />
+
+    <div :for={{value, i} <- Enum.with_index(input_value(@form, :args))}>
+      <div phx-feedback-for={"args[#{i}]"} class="pc-form-field-wrapper phx-no-feedback">
+        <label class="pc-label ">#<%= i+1 %></label>
+
+        <div class="flex flex-row">
+          <input type="text" name={"args[#{i}]"} value={value} class="w-11/12 pc-text-input">
+          <.icon name={:trash} phx-click="remove-argument" phx-value-index={i} phx-target={@myself} class="w-1/12 h-9 cursor-pointer text-gray-500" />
+        </div>
+
+        <div class="pc-form-help-text ">
+          JSON value accepted
+        </div>
+      </div>
+    </div>
+
+    <.button
+      label="Add function argument"
+      link_type="a"
+      to="#"
+      phx-click="add-argument"
+      phx-target={@myself}
+      icon={:plus}
+      variant="outline"
+      size="xs"
+    />
+
+    <hr style="width: 80%; border: 1px dashed rgb(75 85 99); margin: 1em auto" />
+    <.field field={@form[:result]} type="text" label="Result" />
+  </.form>
+</div>

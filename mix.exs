@@ -62,7 +62,7 @@ defmodule ArchethicPlayground.MixProject do
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:archethic,
        git: "https://github.com/archethic-foundation/archethic-node.git",
-       branch: "playground",
+       branch: "testnet",
        runtime: false}
     ]
   end

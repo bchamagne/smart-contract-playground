@@ -94,6 +94,7 @@ export async function setLanguage(monaco) {
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Actions triggered by an incoming transaction with a named action'
         },
+        // Contract
         {
           label: 'Contract.add_uco_transfer/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
@@ -170,6 +171,13 @@ export async function setLanguage(monaco) {
           insertText: 'Contract.set_code "${1:}"',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Sets the next transaction\'s code'
+        },
+        {
+          label: 'Contract.call_function/3',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Contract.call_function ${1:0x0000...}, "${2:function}", [${3:}]',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Calls an external contract public function'
         },
         // Crypto
         {

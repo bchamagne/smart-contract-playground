@@ -105,7 +105,7 @@ export async function setLanguage(monaco) {
         {
           label: 'Contract.add_uco_transfers/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_uco_transfers [\n\t[to: ${1:0x0000...}, amount: ${2:amount}],\n\t[to: ${3:0x0000...}, amount: ${4:amount}]\n]',
+          insertText: 'Contract.add_uco_transfers [\n\t[to: ${1:0x0000...}, amount: ${2:amount}]\n]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds multiple UCO transfers'
         },
@@ -126,30 +126,69 @@ export async function setLanguage(monaco) {
         {
           label: 'Contract.add_token_transfers/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_token_transfers [\n\t[to: ${1:0x0000...}, token_address: ${2:0x0000...}, amount: ${3:amount}],\n\t[to: ${4:0x0000...}, token_address: ${5:0x0000...}, amount: ${6:amount}]\n]',
+          insertText: 'Contract.add_token_transfers [\n\t[to: ${1:0x0000...}, token_address: ${2:0x0000...}, amount: ${3:amount}]\n]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds multiple token transfers'
         },
         {
           label: 'Contract.add_recipient/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_recipient "${1:0x0000...}"',
+          insertText: 'Contract.add_recipient ${1:0x0000...}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a recipient'
         },
         {
           label: 'Contract.add_recipient/3',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_recipient address: "${1:0x0000...}", action: "${2:vote}", args: ["${3:John}"]',
+          insertText: 'Contract.add_recipient address: ${1:0x0000...}, action: "${2:vote}", args: ["${3:John}"]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a recipient'
         },
         {
           label: 'Contract.add_recipients/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_recipients [\n\t[address: "${1:0x0000...}", action: "${2:vote}", args: ["${3:John}"]],\n\t[address: "${4:0x0000...}", action: "${5:vote}", args: ["${6:John}"]]\n]',
+          insertText: 'Contract.add_recipients [\n\t[address: ${1:0x0000...}, action: "${2:vote}", args: ["${3:John}"]]\n]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds multiple contracts\' recipients'
+        },
+        {
+          label: 'Contract.add_ownership/2',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText:
+            [
+              'Contract.add_ownership(',
+              '  secret: ${1:0x...},',
+              '  authorized_keys:',
+              '    Map.set(Map.new(),',
+              '      # public_key',
+              '      ${2:0x0000...},',
+              '      # encryption key',
+              '      ${3:0x...}',
+              '    )',
+              ')',
+            ].join('\n'),
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Adds a ownership'
+        },
+        {
+          label: 'Contract.add_ownerships/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: [
+            'Contract.add_ownerships([',
+            '  [',
+            '    secret: ${1:0x...},',
+            '    authorized_keys:',
+            '      Map.set(Map.new(),',
+            '        # public_key',
+            '        ${2:0x0000...},',
+            '        # encryption key',
+            '        ${3:0x...}',
+            '      )',
+            '  ]',
+            '])',
+          ].join('\n'),
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Adds multiple ownerships'
         },
         {
           label: 'Contract.set_type/1',

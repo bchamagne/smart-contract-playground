@@ -13,6 +13,12 @@ defmodule ArchethicPlayground.MockFunctions do
     Enum.each(mocks, &add_mock/1)
   end
 
+  # not declaring the behaviour (Archethic.Crypto.SharedSecretsKeystore)
+  # because we'd have to declare plenty of function we dont care about
+  def get_storage_nonce() do
+    :crypto.strong_rand_bytes(34)
+  end
+
   # this is not mockable but still part of the behaviour
   @impl Library.Common.Chain
   def get_burn_address() do

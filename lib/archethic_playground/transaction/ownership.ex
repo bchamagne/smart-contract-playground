@@ -3,31 +3,32 @@ defmodule ArchethicPlayground.Transaction.Ownership do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias __MODULE__.EncryptedKeyByAuthorizedKey
+
   @type t :: %__MODULE__{
           secret: String.t(),
-          authorized_keys: list(String.t())
+          authorized_keys: list(EncryptedKeyByAuthorizedKey.t())
         }
 
   @derive {Jason.Encoder, except: [:id]}
   embedded_schema do
     field(:secret, :string)
-    field(:authorized_keys, {:array, :string}, default: [])
+    embeds_many(:authorized_keys, EncryptedKeyByAuthorizedKey, on_replace: :delete)
   end
 
   @doc false
   def changeset(ownership, params = %{}) do
     ownership
-    |> cast(params, [:secret, :authorized_keys])
-    |> validate_required([:secret, :authorized_keys])
-    |> validate_length(:authorized_keys,
-      max: 256,
-      min: 1,
-      message: "maximum number of authorized keys can be 256"
-    )
+    |> cast(params, [:secret])
+    |> cast_embed(:authorized_keys)
+    |> validate_required([:secret])
   end
 
   def append_empty_key(ownership) do
-    %__MODULE__{ownership | authorized_keys: ownership.authorized_keys ++ [""]}
+    %__MODULE__{
+      ownership
+      | authorized_keys: ownership.authorized_keys ++ [%EncryptedKeyByAuthorizedKey{}]
+    }
   end
 
   def remove_key_at(ownership, index) do

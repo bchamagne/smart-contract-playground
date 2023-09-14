@@ -51,8 +51,6 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
               TriggerForm.deserialize_trigger(trigger_str)
           end
 
-        random_address = Utils.Address.random() |> Base.encode16()
-
         case trigger do
           :oracle ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)
@@ -60,7 +58,6 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
             |> TriggerForm.set_transaction(
               Transaction.new(%{
                 "type" => "oracle",
-                "address" => random_address,
                 "content" => Jason.encode!(%{"uco" => %{"usd" => "0.934", "eur" => "0.911"}})
               })
             )
@@ -70,22 +67,21 @@ defmodule ArchethicPlaygroundWeb.TriggerComponent do
             |> TriggerForm.remove_recipient()
             |> TriggerForm.set_transaction(
               Transaction.new(%{
-                "type" => "data",
-                "address" => random_address
+                "type" => "data"
               })
             )
 
           {:transaction, action, args_names} ->
             TriggerForm.changeset(previous_trigger_form, trigger_form)
             |> TriggerForm.set_recipient(%RecipientForm{
-              address: socket.assigns.contract_address,
+              address:
+                ArchethicPlayground.Utils.Address.from_transaction(socket.assigns.transaction),
               action: action,
               args: Enum.map(args_names, &%KeyValue{key: &1, value: ""})
             })
             |> TriggerForm.set_transaction(
               Transaction.new(%{
-                "type" => "data",
-                "address" => random_address
+                "type" => "data"
               })
             )
 

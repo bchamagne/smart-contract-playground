@@ -11,6 +11,7 @@ defmodule ArchethicPlayground.Transaction do
   alias Archethic.TransactionChain.Transaction, as: ArchethicTransaction
   alias Archethic.TransactionChain.TransactionData
   alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient
+  alias Archethic.TransactionChain.TransactionData.Ownership, as: ArchethicOwnership
   alias ArchethicPlayground.Utils
 
   @type t :: %__MODULE__{
@@ -18,11 +19,12 @@ defmodule ArchethicPlayground.Transaction do
           content: String.t(),
           code: String.t(),
           validation_timestamp: String.t(),
-          address: String.t(),
           recipients: list(Recipient.t()),
           uco_transfers: list(UcoTransfer.t()),
           token_transfers: list(TokenTransfer.t()),
-          ownerships: list(Ownership.t())
+          ownerships: list(Ownership.t()),
+          seed: String.t(),
+          index: non_neg_integer()
         }
 
   @derive {Jason.Encoder, except: [:__meta__, :id]}
@@ -31,7 +33,8 @@ defmodule ArchethicPlayground.Transaction do
     field(:content, :string, default: "")
     field(:code, :string, default: "")
     field(:validation_timestamp, :string)
-    field(:address, :string)
+    field(:seed, :string)
+    field(:index, :integer)
     embeds_many(:recipients, Recipient, on_replace: :delete)
     embeds_many(:uco_transfers, UcoTransfer, on_replace: :delete)
     embeds_many(:token_transfers, TokenTransfer, on_replace: :delete)
@@ -50,7 +53,7 @@ defmodule ArchethicPlayground.Transaction do
 
   def changeset(transaction, attrs \\ %{}) do
     transaction
-    |> cast(attrs, [:type, :content, :code, :address, :validation_timestamp])
+    |> cast(attrs, [:type, :content, :seed, :index, :code, :validation_timestamp])
     |> cast_embed(:uco_transfers)
     |> cast_embed(:token_transfers)
     |> cast_embed(:recipients)
@@ -66,7 +69,13 @@ defmodule ArchethicPlayground.Transaction do
         Utils.Date.datetime_to_browser_timestamp(DateTime.utc_now())
       )
 
-    changeset(%__MODULE__{}, attrs)
+    changeset(
+      %__MODULE__{
+        seed: random_seed(),
+        index: 1
+      },
+      attrs
+    )
   end
 
   def append_empty_recipient(transaction) do
@@ -110,27 +119,40 @@ defmodule ArchethicPlayground.Transaction do
     %__MODULE__{transaction | ownerships: List.delete_at(transaction.ownerships, index)}
   end
 
-  def add_empty_public_key_on_ownership_at(transaction, index) do
+  def add_empty_authorized_key_on_ownership_at(transaction, index) do
     %__MODULE__{
       transaction
       | ownerships: List.update_at(transaction.ownerships, index, &Ownership.append_empty_key/1)
     }
   end
 
-  def remove_public_key_on_ownership_at(transaction, ownership_index, public_key_index) do
+  def remove_authorized_key_on_ownership_at(transaction, ownership_index, index) do
     %__MODULE__{
       transaction
       | ownerships:
           List.update_at(transaction.ownerships, ownership_index, fn ownership ->
-            Ownership.remove_key_at(ownership, public_key_index)
+            Ownership.remove_key_at(ownership, index)
           end)
     }
   end
 
-  def add_contract_ownership(transaction, seed, storage_nonce_pubkey) do
+  def add_contract_ownership(transaction, seed, storage_nonce_pkey_hex) do
+    # storage_nonce_pbkey is already an hex because it comes from an API endpoint
+    aes_key = :crypto.strong_rand_bytes(32)
+
+    storage_nonce_pkey = hex_to_bin(storage_nonce_pkey_hex)
+
+    secret_hex = bin_to_hex(Crypto.aes_encrypt(seed, aes_key))
+    encrypte_key_hex = bin_to_hex(Crypto.ec_encrypt(aes_key, storage_nonce_pkey))
+
     contract_ownership = %Ownership{
-      secret: seed,
-      authorized_keys: [storage_nonce_pubkey]
+      secret: secret_hex,
+      authorized_keys: [
+        %Ownership.EncryptedKeyByAuthorizedKey{
+          public_key: storage_nonce_pkey_hex,
+          encrypted_key: encrypte_key_hex
+        }
+      ]
     }
 
     %__MODULE__{transaction | ownerships: [contract_ownership | transaction.ownerships]}
@@ -142,95 +164,103 @@ defmodule ArchethicPlayground.Transaction do
 
     Map.from_struct(t)
     |> Enum.reject(fn {key, value} ->
-      key == :__meta__ || value == nil || value == [] || value == "" ||
+      key in [:__meta__, :seed, :index] || value in [nil, [], ""] ||
         (filter_code? && key == :code)
     end)
     |> Enum.into(%{})
   end
 
   @spec to_archethic(t()) :: ArchethicTransaction.t()
-  def to_archethic(t = %__MODULE__{}) do
-    tx = %ArchethicTransaction{
-      type: String.to_existing_atom(t.type),
-      address: hex_to_bin(t.address),
-      data: %TransactionData{
-        code: t.code,
-        content: t.content,
-        ledger: %TransactionData.Ledger{
-          token: %TransactionData.TokenLedger{
-            transfers:
-              Enum.map(t.token_transfers, fn t ->
-                %TransactionData.TokenLedger.Transfer{
-                  token_address: hex_to_bin(t.token_address),
-                  to: hex_to_bin(t.to),
-                  amount: Archethic.Utils.to_bigint(t.amount),
-                  token_id: t.token_id
-                }
-              end)
-          },
-          uco: %TransactionData.UCOLedger{
-            transfers:
-              Enum.map(t.uco_transfers, fn t ->
-                %TransactionData.UCOLedger.Transfer{
-                  to: hex_to_bin(t.to),
-                  amount: Archethic.Utils.to_bigint(t.amount)
-                }
-              end)
-          }
+  def to_archethic(t = %__MODULE__{seed: seed, index: index}) do
+    data = %TransactionData{
+      code: t.code,
+      content: t.content,
+      ledger: %TransactionData.Ledger{
+        token: %TransactionData.TokenLedger{
+          transfers:
+            Enum.map(t.token_transfers, fn t ->
+              %TransactionData.TokenLedger.Transfer{
+                token_address: hex_to_bin(t.token_address),
+                to: hex_to_bin(t.to),
+                amount: Archethic.Utils.to_bigint(t.amount),
+                token_id: t.token_id
+              }
+            end)
         },
-        recipients:
-          Enum.map(t.recipients, fn
-            %Recipient{address: address, action: "", args_json: ""} ->
-              %ArchethicRecipient{
-                address: hex_to_bin(address)
+        uco: %TransactionData.UCOLedger{
+          transfers:
+            Enum.map(t.uco_transfers, fn t ->
+              %TransactionData.UCOLedger.Transfer{
+                to: hex_to_bin(t.to),
+                amount: Archethic.Utils.to_bigint(t.amount)
               }
-
-            %Recipient{address: address, action: action, args_json: args_json} ->
-              %ArchethicRecipient{
-                address: hex_to_bin(address),
-                action: action,
-                args:
-                  case Jason.decode(args_json) do
-                    {:ok, args} when is_list(args) -> args
-                    _ -> []
-                  end
-              }
-          end),
-        ownerships:
-          Enum.map(t.ownerships, fn o ->
-            aes_key = :crypto.strong_rand_bytes(32)
-
-            %TransactionData.Ownership{
-              secret: Crypto.aes_encrypt(o.secret, aes_key),
-              authorized_keys:
-                o.authorized_keys
-                |> Enum.map(&hex_to_bin/1)
-                |> Enum.map(&{&1, Crypto.ec_encrypt(aes_key, &1)})
-                |> Enum.into(%{})
+            end)
+        }
+      },
+      recipients:
+        Enum.map(t.recipients, fn
+          %Recipient{address: address, action: "", args_json: ""} ->
+            %ArchethicRecipient{
+              address: hex_to_bin(address)
             }
-          end)
-      }
+
+          %Recipient{address: address, action: action, args_json: args_json} ->
+            %ArchethicRecipient{
+              address: hex_to_bin(address),
+              action: action,
+              args:
+                case Jason.decode(args_json) do
+                  {:ok, args} when is_list(args) -> args
+                  _ -> []
+                end
+            }
+        end),
+      ownerships:
+        Enum.map(t.ownerships, fn %Ownership{
+                                    secret: secret,
+                                    authorized_keys: authorized_keys
+                                  } ->
+          %ArchethicOwnership{
+            secret: hex_to_bin(secret),
+            authorized_keys:
+              Enum.map(authorized_keys, fn %Ownership.EncryptedKeyByAuthorizedKey{
+                                             public_key: public_key,
+                                             encrypted_key: encrypted_key
+                                           } ->
+                {hex_to_bin(public_key), hex_to_bin(encrypted_key)}
+              end)
+              |> Enum.into(%{})
+          }
+        end)
     }
 
+    signed_tx =
+      ArchethicTransaction.new(
+        String.to_existing_atom(t.type),
+        data,
+        seed,
+        index
+      )
+
     %ArchethicTransaction{
-      tx
+      signed_tx
       | validation_stamp: %ArchethicTransaction.ValidationStamp{
           ArchethicTransaction.ValidationStamp.generate_dummy()
           | timestamp: Utils.Date.browser_timestamp_to_datetime(t.validation_timestamp),
             ledger_operations: %ArchethicTransaction.ValidationStamp.LedgerOperations{
-              transaction_movements: ArchethicTransaction.get_movements(tx)
+              transaction_movements: ArchethicTransaction.get_movements(signed_tx)
             }
         }
     }
   end
 
-  def from_archethic(nil), do: nil
+  def from_archethic(nil, _, _), do: nil
 
-  def from_archethic(t = %ArchethicTransaction{}) do
-    # TODO: ownerships... not sure what to do
+  def from_archethic(t = %ArchethicTransaction{}, seed, index) do
     %__MODULE__{
+      seed: seed,
+      index: index,
       type: Atom.to_string(t.type),
-      address: bin_to_hex(t.address),
       code: t.data.code,
       content: t.data.content,
       validation_timestamp:
@@ -269,8 +299,26 @@ defmodule ArchethicPlayground.Transaction do
               action: action,
               args_json: Jason.encode!(args)
             }
+        end),
+      ownerships:
+        Enum.map(t.data.ownerships, fn
+          %ArchethicOwnership{secret: secret, authorized_keys: authorized_keys} ->
+            %Ownership{
+              secret: bin_to_hex(secret),
+              authorized_keys:
+                Enum.map(authorized_keys, fn {public_key, encrypted_key} ->
+                  %Ownership.EncryptedKeyByAuthorizedKey{
+                    public_key: bin_to_hex(public_key),
+                    encrypted_key: bin_to_hex(encrypted_key)
+                  }
+                end)
+            }
         end)
     }
+  end
+
+  defp random_seed() do
+    :crypto.strong_rand_bytes(8) |> Base.encode16()
   end
 
   defp hex_to_bin(nil), do: nil
@@ -281,9 +329,7 @@ defmodule ArchethicPlayground.Transaction do
         bin
 
       :error ->
-        # to be improve later with proper form errors that blocks the trigger/deploy actions
-        send(self(), {:console, :warning, "Invalid hexadecimal: #{hex}. Value has been ignored."})
-        <<>>
+        raise(ArgumentError, "Not an hexadecimal: #{hex}")
     end
   end
 

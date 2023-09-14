@@ -225,8 +225,8 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
       nil
     else
       # assumption that contract is deployed at index 1 (to be changed later by using chain_length+1)
-      contract_address = seed_to_address(seed, 1)
-      genesis_address = seed_to_address(seed, 0)
+      contract_address = Utils.Address.from_seed_index(seed, 1)
+      genesis_address = Utils.Address.from_seed_index(seed, 0)
 
       uri = URI.parse(endpoint)
       contract_url = URI.to_string(%URI{uri | path: "/explorer/transaction/#{contract_address}"})
@@ -239,13 +239,5 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
         genesis_url: genesis_url
       }
     end
-  end
-
-  defp seed_to_address(seed, idx) do
-    seed
-    |> Crypto.derive_keypair(idx)
-    |> elem(0)
-    |> Crypto.derive_address()
-    |> Base.encode16()
   end
 end

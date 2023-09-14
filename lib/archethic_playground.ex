@@ -2,6 +2,7 @@ defmodule ArchethicPlayground do
   @moduledoc """
   Main module to run the functionality needed
   """
+  alias Archethic.Crypto
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
   alias Archethic.TransactionChain.Transaction
@@ -16,6 +17,10 @@ defmodule ArchethicPlayground do
   @spec parse(PlaygroundTransaction.t()) :: {:ok, Contract.t()} | {:error, String.t()}
   def parse(transaction_contract) do
     transaction_contract
+    |> PlaygroundTransaction.add_contract_ownership(
+      transaction_contract.seed,
+      Crypto.storage_nonce_public_key() |> Base.encode16()
+    )
     |> PlaygroundTransaction.to_archethic()
     |> Contracts.from_transaction()
   rescue
@@ -103,7 +108,12 @@ defmodule ArchethicPlayground do
              time_now: datetime
            ),
          :ok <- check_valid_postcondition(contract, tx_or_nil, datetime),
-         tx_or_nil <- PlaygroundTransaction.from_archethic(tx_or_nil) do
+         tx_or_nil <-
+           PlaygroundTransaction.from_archethic(
+             tx_or_nil,
+             transaction_contract.seed,
+             1 + transaction_contract.index
+           ) do
       {:ok, tx_or_nil}
     end
   catch

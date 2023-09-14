@@ -70,15 +70,15 @@ defmodule ArchethicPlaygroundWeb.TransactionFormComponent do
     |> Transaction.remove_ownership_at(index)
   end
 
-  def on("add-ownership-public-key", %{"ownership-index" => ownership_index}, transaction) do
+  def on("add-ownership-authorized-key", %{"ownership-index" => ownership_index}, transaction) do
     ownership_index = String.to_integer(ownership_index)
 
     transaction
-    |> Transaction.add_empty_public_key_on_ownership_at(ownership_index)
+    |> Transaction.add_empty_authorized_key_on_ownership_at(ownership_index)
   end
 
   def on(
-        "remove-ownership-public-key",
+        "remove-ownership-authorized-key",
         %{"ownership-index" => ownership_index, "public-key-index" => public_key_index},
         transaction
       ) do
@@ -86,7 +86,7 @@ defmodule ArchethicPlaygroundWeb.TransactionFormComponent do
     public_key_index = String.to_integer(public_key_index)
 
     transaction
-    |> Transaction.remove_public_key_on_ownership_at(ownership_index, public_key_index)
+    |> Transaction.remove_authorized_key_on_ownership_at(ownership_index, public_key_index)
   end
 
   defp list_transaction_types() do

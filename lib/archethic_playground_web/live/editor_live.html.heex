@@ -19,7 +19,7 @@
             module={TriggerComponent}
             id={TriggerComponent.id()}
             triggers={@triggers}
-            contract_address={@transaction_contract.address}
+            transaction={@transaction_contract}
           />
         <% end %>
         <%= if @left_panel == "function" do %>

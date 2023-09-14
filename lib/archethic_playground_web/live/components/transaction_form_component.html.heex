@@ -1,5 +1,7 @@
 <div>
   <.form :let={f} for={@form} phx-change="transaction_form:on-form-change" phx-target={@parent}>
+    <.field field={@form[:seed]} type="hidden" />
+    <.field field={@form[:index]} type="hidden" />
     <.field field={@form[:type]} type="select" options={list_transaction_types()} label="Type*" />
 
     <.field field={@form[:content]} type="textarea" label="Content" />
@@ -17,11 +19,18 @@
         label="Validation UTC time"
         help_text={"Used to mock #{@global_variable}.timestamp"}
       />
-      <.field
-        field={@form[:address]}
-        label="Address"
-        help_text={"Used to mock #{@global_variable}.address"}
-      />
+      <div class="pc-form-field-wrapper">
+        <label class="pc-label">Address</label>
+        <input
+          type="text"
+          class="pc-text-input"
+          value={ArchethicPlayground.Utils.Address.from_seed_index(input_value(f, :seed), input_value(f, :index))}
+          disabled
+        />
+        <div class="pc-form-help-text ">
+          Used to mock <%= @global_variable %>.address
+        </div>
+      </div>
     <% end %>
 
     <.card class="mb-2">
@@ -174,32 +183,52 @@
           class="w-full"
         />
 
+        <%= if length(input_value(f, :ownerships)) > 0 do %>
+        <div class="pc-form-help-text ">
+          You must encode the secret with an AES key.<br/>
+          Then you must encrypt the AES key for each public key.
+
+          <a href="https://wiki.archethic.net/learn/cryptography/" target="_blank">
+            <.icon
+              name={:question_mark_circle}
+              class="inline text-gray-500 cursor-pointer w-6 h-6"
+            />
+          </a>
+        </div>
+        <% end %>
+
         <%= for ownership_form <- inputs_for f, :ownerships do %>
           <%= hidden_inputs_for(ownership_form) %>
           <div class="flex gap-1 my-2 p-1 border border-gray-700 rounded">
             <div class="w-11/12 flex flex-col gap-1">
               <%= text_input(ownership_form, :secret,
                 class: "pc-text-input",
-                placeholder: "Secret"
+                placeholder: "Encoded secret"
               ) %>
 
-              <% # pure html to deal with this nested list %>
-              <%= for {key, public_key_index} <- Enum.with_index(input_value(ownership_form, :authorized_keys) || []) do %>
+              <%= for authorized_key_form <- inputs_for ownership_form, :authorized_keys do %>
                 <div class="flex">
                   <input
-                    name={input_name(ownership_form, :authorized_keys) <> "[]"}
+                    name={input_name(authorized_key_form, :public_key)}
                     type="text"
-                    value={key}
+                    value={input_value(authorized_key_form, :public_key)}
                     class="pc-text-input w-11/12"
                     placeholder="Public key"
+                  />
+                  <input
+                    name={input_name(authorized_key_form, :encrypted_key)}
+                    type="text"
+                    value={input_value(authorized_key_form, :encrypted_key)}
+                    class="pc-text-input w-11/12"
+                    placeholder="Encoded encryption key"
                   />
                   <div class="w-1/12 flex flex-col place-content-center">
                     <.icon
                       name={:trash}
                       class="cursor-pointer"
-                      phx-click="transaction_form:remove-ownership-public-key"
+                      phx-click="transaction_form:remove-ownership-authorized-key"
                       phx-value-ownership-index={ownership_form.index}
-                      phx-value-public-key-index={public_key_index}
+                      phx-value-public-key-index={authorized_key_form.index}
                       phx-target={@parent}
                     />
                   </div>
@@ -211,7 +240,7 @@
               <.icon
                 name={:plus}
                 class="cursor-pointer"
-                phx-click="transaction_form:add-ownership-public-key"
+                phx-click="transaction_form:add-ownership-authorized-key"
                 phx-value-ownership-index={ownership_form.index}
                 phx-target={@parent}
               />

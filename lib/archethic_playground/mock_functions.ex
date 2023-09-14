@@ -14,9 +14,16 @@ defmodule ArchethicPlayground.MockFunctions do
   end
 
   # not declaring the behaviour (Archethic.Crypto.SharedSecretsKeystore)
-  # because we'd have to declare plenty of function we dont care about
+  # because we'd have to declare plenty of functions we dont care about
   def get_storage_nonce() do
-    :crypto.strong_rand_bytes(34)
+    <<151, 26, 71, 190, 21, 114, 94, 13, 165, 41, 21, 146, 134, 93, 31, 207, 81, 207, 166, 38, 4,
+      208, 28, 163, 18, 245, 213, 41, 139, 109, 204, 30, 218, 29>>
+  end
+
+  # not declaring the behaviour (Archethic.Crypto.NodeKeystore.Origin )
+  # because we'd have to declare plenty of functions we dont care about
+  def sign_with_origin_key(_data) do
+    :crypto.strong_rand_bytes(64)
   end
 
   # this is not mockable but still part of the behaviour

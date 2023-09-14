@@ -1,7 +1,6 @@
 defmodule ArchethicPlaygroundWeb.EditorLive do
   @moduledoc false
 
-  alias ArchethicPlayground.Utils
   alias ArchethicPlayground.Transaction
   alias ArchethicPlayground.TriggerForm
   alias ArchethicPlaygroundWeb.ConsoleComponent
@@ -11,15 +10,13 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   alias ArchethicPlaygroundWeb.HeaderComponent
   alias ArchethicPlaygroundWeb.SidebarComponent
   alias ArchethicPlaygroundWeb.TriggerComponent
+
   alias Archethic.Contracts.Contract
 
   use ArchethicPlaygroundWeb, :live_view
 
   def mount(_params, _opts, socket) do
     code = default_code()
-
-    # we define a random address so we can prefill the trigger transaction recipients
-    random_address = Utils.Address.random() |> Base.encode16()
 
     socket =
       socket
@@ -33,7 +30,6 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
         functions: [],
         transaction_contract:
           Transaction.new(%{
-            "address" => random_address,
             "type" => "contract",
             "code" => code
           })
@@ -159,11 +155,6 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
           )
 
           if replace_contract? do
-            # hack:
-            # we give the transaction the same address as previous so we can chain without having to
-            # update the recipients on the trigger form
-            tx = %Transaction{tx | address: socket.assigns.transaction_contract.address}
-
             socket
             |> assign(transaction_contract: tx)
             |> push_event("set-code", %{"code" => tx.code})

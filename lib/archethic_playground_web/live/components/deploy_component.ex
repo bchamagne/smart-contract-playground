@@ -5,7 +5,6 @@ defmodule ArchethicPlaygroundWeb.DeployComponent do
   alias ArchethicPlayground.Utils
   alias ArchethicPlayground.Transaction
   alias ArchethicPlayground.RemoteData
-  alias Archethic.Crypto
   alias Archethic.Utils.Regression.Api
 
   def id(), do: "deploy_component"

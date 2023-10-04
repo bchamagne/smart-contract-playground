@@ -20,7 +20,16 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.ContractCallFunction3 do
   end
 
   def handle_event("add-argument", _params, socket) do
-    params = update_in(socket.assigns.form.params, ["args"], fn args -> args ++ [""] end)
+    params = update_in(socket.assigns.form.params, ["args"], &(&1 ++ [""]))
+
+    {:noreply, assign_form(socket, params)}
+  end
+
+  def handle_event("remove-argument", %{"index" => index}, socket) do
+    index = String.to_integer(index)
+
+    params = update_in(socket.assigns.form.params, ["args"], &List.delete_at(&1, index))
+
     {:noreply, assign_form(socket, params)}
   end
 

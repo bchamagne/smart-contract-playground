@@ -5,6 +5,7 @@ defmodule ArchethicPlayground do
   alias Archethic.Crypto
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
+  alias Archethic.Contracts.State
   alias Archethic.TransactionChain.Transaction
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
@@ -98,27 +99,36 @@ defmodule ArchethicPlayground do
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
+         maybe_state_utxo <- State.get_utxo_from_transaction(contract.transaction),
          :ok <- check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
-         {:ok, tx_or_nil} <-
+         %Contract.Result.Success{next_tx: next_tx, next_state_utxo: next_state_utxo} <-
            Contracts.execute_trigger(
              trigger,
              contract,
              maybe_tx,
              maybe_recipient,
+             maybe_state_utxo,
              time_now: datetime
            ),
-         :ok <- check_valid_postcondition(contract, tx_or_nil, datetime),
-         tx_or_nil <-
+         :ok <- check_valid_postcondition(contract, next_tx, datetime),
+         next_tx <-
            PlaygroundTransaction.from_archethic(
-             tx_or_nil,
+             next_tx,
+             next_state_utxo,
              transaction_contract.seed,
              1 + transaction_contract.index
            ) do
-      {:ok, tx_or_nil}
+      {:ok, next_tx}
+    else
+      %Contract.Result.Noop{} ->
+        {:ok, nil}
+
+      %Contract.Result.Error{user_friendly_error: reason} ->
+        {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
-  catch
-    {:error, reason} ->
-      {:error, reason}
   end
 
   defp get_time_now(mocks) do

@@ -8,6 +8,7 @@ defmodule ArchethicPlayground.Transaction do
   alias __MODULE__.Ownership
 
   alias Archethic.Crypto
+  alias Archethic.Contracts.State
   alias Archethic.TransactionChain.Transaction, as: ArchethicTransaction
   alias Archethic.TransactionChain.TransactionData
   alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient
@@ -24,7 +25,8 @@ defmodule ArchethicPlayground.Transaction do
           token_transfers: list(TokenTransfer.t()),
           ownerships: list(Ownership.t()),
           seed: String.t(),
-          index: non_neg_integer()
+          index: non_neg_integer(),
+          state: String.t()
         }
 
   @derive {Jason.Encoder, except: [:__meta__, :id]}
@@ -35,6 +37,7 @@ defmodule ArchethicPlayground.Transaction do
     field(:validation_timestamp, :string)
     field(:seed, :string)
     field(:index, :integer)
+    field(:state, :string)
     embeds_many(:recipients, Recipient, on_replace: :delete)
     embeds_many(:uco_transfers, UcoTransfer, on_replace: :delete)
     embeds_many(:token_transfers, TokenTransfer, on_replace: :delete)
@@ -248,21 +251,30 @@ defmodule ArchethicPlayground.Transaction do
           ArchethicTransaction.ValidationStamp.generate_dummy()
           | timestamp: Utils.Date.browser_timestamp_to_datetime(t.validation_timestamp),
             ledger_operations: %ArchethicTransaction.ValidationStamp.LedgerOperations{
-              transaction_movements: ArchethicTransaction.get_movements(signed_tx)
+              transaction_movements: ArchethicTransaction.get_movements(signed_tx),
+              unspent_outputs:
+                case extract_state_utxo(t) do
+                  {:ok, nil} -> []
+                  {:ok, state_utxo} -> [state_utxo]
+                  {:error, :invalid_state} -> []
+                end
             }
         }
     }
   end
 
-  def from_archethic(nil, _, _), do: nil
-
-  def from_archethic(t = %ArchethicTransaction{}, seed, index) do
+  def from_archethic(t = %ArchethicTransaction{}, maybe_state_utxo, seed, index) do
     %__MODULE__{
       seed: seed,
       index: index,
       type: Atom.to_string(t.type),
       code: t.data.code,
       content: t.data.content,
+      state:
+        case maybe_state_utxo do
+          nil -> nil
+          state_utxo -> State.from_utxo(state_utxo) |> Jason.encode!()
+        end,
       validation_timestamp:
         if t.validation_stamp != nil do
           Utils.Date.datetime_to_browser_timestamp(t.validation_stamp.timestamp)
@@ -335,4 +347,20 @@ defmodule ArchethicPlayground.Transaction do
 
   defp bin_to_hex(nil), do: nil
   defp bin_to_hex(bin), do: Base.encode16(bin)
+
+  defp extract_state_utxo(tx) do
+    case tx.state do
+      nil ->
+        {:ok, nil}
+
+      state_str ->
+        case Jason.decode(state_str) do
+          {:ok, map} when is_map(map) ->
+            State.to_utxo(map)
+
+          _ ->
+            {:error, :invalid_state}
+        end
+    end
+  end
 end

@@ -4,6 +4,14 @@
     <.field field={@form[:index]} type="hidden" />
     <.field field={@form[:type]} type="select" options={list_transaction_types()} label="Type*" />
 
+    <%= if @display_state do %>
+      <.field
+        field={@form[:state]}
+        type="textarea"
+        label="State"
+        help_text="Remainder: a contract is always deployed without state"
+      />
+    <% end %>
     <.field field={@form[:content]} type="textarea" label="Content" />
 
     <%= if @display_code do %>
@@ -24,7 +32,12 @@
         <input
           type="text"
           class="pc-text-input"
-          value={ArchethicPlayground.Utils.Address.from_seed_index(input_value(f, :seed), input_value(f, :index))}
+          value={
+            ArchethicPlayground.Utils.Address.from_seed_index(
+              input_value(f, :seed),
+              input_value(f, :index)
+            )
+          }
           disabled
         />
         <div class="pc-form-help-text ">
@@ -184,17 +197,16 @@
         />
 
         <%= if length(input_value(f, :ownerships)) > 0 do %>
-        <div class="pc-form-help-text ">
-          You must encode the secret with an AES key.<br/>
-          Then you must encrypt the AES key for each public key.
-
-          <a href="https://wiki.archethic.net/learn/cryptography/" target="_blank">
-            <.icon
-              name={:question_mark_circle}
-              class="inline text-gray-500 cursor-pointer w-6 h-6"
-            />
-          </a>
-        </div>
+          <div class="pc-form-help-text ">
+            You must encode the secret with an AES key.<br />
+            Then you must encrypt the AES key for each public key.
+            <a href="https://wiki.archethic.net/learn/cryptography/" target="_blank">
+              <.icon
+                name={:question_mark_circle}
+                class="inline text-gray-500 cursor-pointer w-6 h-6"
+              />
+            </a>
+          </div>
         <% end %>
 
         <%= for ownership_form <- inputs_for f, :ownerships do %>

@@ -26,15 +26,15 @@ defmodule ArchethicPlayground.MockFunctions do
     :crypto.strong_rand_bytes(64)
   end
 
-  # this is not mockable but still part of the behaviour
-  @impl Library.Common.Chain
-  def get_burn_address() do
-    Library.Common.ChainImpl.get_burn_address()
-  end
-
   # not a behaviour
   def call_function(address, function, args) do
     get_mocked_value("Contract.call_function/3", [address, function, args])
+  end
+
+  # no need to mock but still part of the behaviour
+  @impl Library.Common.Chain
+  def get_burn_address() do
+    Library.Common.ChainImpl.get_burn_address()
   end
 
   @impl Library.Common.Chain
@@ -57,27 +57,92 @@ defmodule ArchethicPlayground.MockFunctions do
     get_mocked_value("Chain.get_transaction/1", [address])
   end
 
+  @impl Library.Common.Chain
+  def get_previous_address(address) do
+    get_mocked_value("Chain.get_previous_address/1", [address])
+  end
+
+  @impl Library.Common.Chain
+  def get_balance(address) do
+    get_mocked_value("Chain.get_balance/1", [address])
+  end
+
+  @impl Library.Common.Chain
+  def get_uco_balance(address) do
+    get_mocked_value("Chain.get_uco_balance/1", [address])
+  end
+
+  @impl Library.Common.Chain
+  def get_token_balance(address, token_address) do
+    get_mocked_value("Chain.get_token_balance/2", [address, token_address])
+  end
+
+  @impl Library.Common.Chain
+  def get_token_balance(address, token_address, token_id) do
+    get_mocked_value("Chain.get_token_balance/3", [address, token_address, token_id])
+  end
+
+  @impl Library.Common.Chain
+  def get_tokens_balance(address) do
+    get_mocked_value("Chain.get_tokens_balance/1", [address])
+  end
+
+  @impl Library.Common.Chain
+  def get_tokens_balance(address, tokens_keys) do
+    get_mocked_value("Chain.get_tokens_balance/2", [address, tokens_keys])
+  end
+
   @impl Library.Common.Token
   def fetch_id_from_address(address) do
     get_mocked_value("Token.fetch_id_from_address/1", [address])
   end
 
   @impl Library.Common.Http
-  def fetch(url) do
-    get_mocked_value("Http.fetch/1", [url],
+  def request(url) do
+    get_mocked_value("Http.request/1", [url],
       on_miss: fn ->
-        # we autorize normal fetch
-        Library.Common.HttpImpl.fetch(url)
+        # we autorize normal request
+        Library.Common.HttpImpl.request(url)
       end
     )
   end
 
   @impl Library.Common.Http
-  def fetch_many(urls) do
-    get_mocked_value("Http.fetch_many/1", [urls],
+  def request(url, method) do
+    get_mocked_value("Http.request/2", [url, method],
       on_miss: fn ->
-        # we autorize normal fetch_many
-        Library.Common.HttpImpl.fetch_many(urls)
+        # we autorize normal request
+        Library.Common.HttpImpl.request(url, method)
+      end
+    )
+  end
+
+  @impl Library.Common.Http
+  def request(url, method, headers) do
+    get_mocked_value("Http.request/3", [url, method, headers],
+      on_miss: fn ->
+        # we autorize normal request
+        Library.Common.HttpImpl.request(url, method, headers)
+      end
+    )
+  end
+
+  @impl Library.Common.Http
+  def request(url, method, headers, body) do
+    get_mocked_value("Http.request/4", [url, method, headers, body],
+      on_miss: fn ->
+        # we autorize normal request
+        Library.Common.HttpImpl.request(url, method, headers, body)
+      end
+    )
+  end
+
+  @impl Library.Common.Http
+  def request_many(reqs) do
+    get_mocked_value("Http.request_many/1", [reqs],
+      on_miss: fn ->
+        # we autorize normal request
+        Library.Common.HttpImpl.request_many(reqs)
       end
     )
   end

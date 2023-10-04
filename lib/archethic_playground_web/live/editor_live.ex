@@ -119,7 +119,7 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
            args_values
          ) do
       {:ok, result} ->
-        send(self(), {:console, :success, "Result: #{inspect(result)}"})
+        send(self(), {:console, :success, result})
 
       {:error, :function_failure} ->
         send(self(), {:console, :error, "Function failed"})

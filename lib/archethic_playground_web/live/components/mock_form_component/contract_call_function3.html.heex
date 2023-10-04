@@ -7,11 +7,17 @@
 
     <div :for={{value, i} <- Enum.with_index(input_value(@form, :args))}>
       <div phx-feedback-for={"args[#{i}]"} class="pc-form-field-wrapper phx-no-feedback">
-        <label class="pc-label ">#<%= i+1 %></label>
+        <label class="pc-label ">#<%= i + 1 %></label>
 
         <div class="flex flex-row">
-          <input type="text" name={"args[#{i}]"} value={value} class="w-11/12 pc-text-input">
-          <.icon name={:trash} phx-click="remove-argument" phx-value-index={i} phx-target={@myself} class="w-1/12 h-9 cursor-pointer text-gray-500" />
+          <textarea name={"args[#{i}]"} class="w-11/12 pc-text-input"><%= value %></textarea>
+          <.icon
+            name={:trash}
+            phx-click="remove-argument"
+            phx-value-index={i}
+            phx-target={@myself}
+            class="w-1/12 h-9 cursor-pointer text-gray-500"
+          />
         </div>
 
         <div class="pc-form-help-text ">
@@ -32,6 +38,6 @@
     />
 
     <hr style="width: 80%; border: 1px dashed rgb(75 85 99); margin: 1em auto" />
-    <.field field={@form[:result]} type="text" label="Result" />
+    <.field field={@form[:result]} type="textarea" label="Result" />
   </.form>
 </div>

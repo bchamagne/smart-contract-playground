@@ -7,6 +7,7 @@ defmodule ArchethicPlayground do
   alias Archethic.Contracts.Contract
   alias Archethic.Contracts.State
   alias Archethic.TransactionChain.Transaction
+  alias Archethic.TransactionChain.Transaction.ValidationStamp.LedgerOperations.UnspentOutput
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
@@ -33,7 +34,8 @@ defmodule ArchethicPlayground do
   @spec execute_function(
           contract_tx :: PlaygroundTransaction.t(),
           function_name :: String.t(),
-          args_values :: list(any())
+          args_values :: list(any()),
+          maybe_state_utxo :: nil | UnspentOutput.t()
         ) ::
           {:ok, any()}
           | {:error, :function_failure}
@@ -43,10 +45,11 @@ defmodule ArchethicPlayground do
   def execute_function(
         contract_tx,
         function_name,
-        args_values
+        args_values,
+        maybe_state_utxo
       ) do
     {:ok, contract} = parse(contract_tx)
-    Contracts.execute_function(contract, function_name, args_values)
+    Contracts.execute_function(contract, function_name, args_values, maybe_state_utxo)
   end
 
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::

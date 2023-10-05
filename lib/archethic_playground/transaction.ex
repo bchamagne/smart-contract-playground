@@ -348,7 +348,7 @@ defmodule ArchethicPlayground.Transaction do
   defp bin_to_hex(nil), do: nil
   defp bin_to_hex(bin), do: Base.encode16(bin)
 
-  defp extract_state_utxo(tx) do
+  def extract_state_utxo(tx) do
     case tx.state do
       nil ->
         {:ok, nil}

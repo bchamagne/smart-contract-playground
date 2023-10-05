@@ -116,7 +116,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
     case ArchethicPlayground.execute_function(
            socket.assigns.transaction_contract,
            function_name,
-           args_values
+           args_values,
+           case Transaction.extract_state_utxo(socket.assigns.transaction_contract) do
+             {:ok, maybe_state_utxo} -> maybe_state_utxo
+             {:error, :invalid_state} -> nil
+           end
          ) do
       {:ok, result} ->
         send(self(), {:console, :success, result})

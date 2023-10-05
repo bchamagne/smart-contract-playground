@@ -166,6 +166,10 @@ defmodule ArchethicPlayground.Transaction do
     filter_code? = Keyword.get(opts, :filter_code, false)
 
     Map.from_struct(t)
+    |> Map.update(:state, nil, fn
+      nil -> nil
+      state -> Jason.decode!(state)
+    end)
     |> Enum.reject(fn {key, value} ->
       key in [:__meta__, :seed, :index] || value in [nil, [], ""] ||
         (filter_code? && key == :code)

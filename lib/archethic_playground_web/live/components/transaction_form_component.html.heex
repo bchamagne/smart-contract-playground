@@ -11,7 +11,10 @@
         label="State"
         help_text="Remainder: a contract is always deployed without state"
       />
+    <% else %>
+      <.field field={@form[:state]} type="hidden" label="State" />
     <% end %>
+
     <.field field={@form[:content]} type="textarea" label="Content" />
 
     <%= if @display_code do %>

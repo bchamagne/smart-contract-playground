@@ -56,7 +56,7 @@ defmodule ArchethicPlayground.Transaction do
 
   def changeset(transaction, attrs \\ %{}) do
     transaction
-    |> cast(attrs, [:type, :content, :seed, :index, :code, :validation_timestamp])
+    |> cast(attrs, [:type, :content, :state, :seed, :index, :code, :validation_timestamp])
     |> cast_embed(:uco_transfers)
     |> cast_embed(:token_transfers)
     |> cast_embed(:recipients)

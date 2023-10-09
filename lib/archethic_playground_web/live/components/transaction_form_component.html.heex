@@ -38,7 +38,7 @@
           value={
             ArchethicPlayground.Utils.Address.from_seed_index(
               input_value(f, :seed),
-              input_value(f, :index)
+              input_value(f, :index) + 1
             )
           }
           disabled

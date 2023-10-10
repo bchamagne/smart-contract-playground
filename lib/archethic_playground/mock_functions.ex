@@ -43,6 +43,16 @@ defmodule ArchethicPlayground.MockFunctions do
   end
 
   @impl Library.Common.Chain
+  def get_last_address(address) do
+    get_mocked_value("Chain.get_last_address/1", [address])
+  end
+
+  @impl Library.Common.Chain
+  def get_last_transaction(address) do
+    get_mocked_value("Chain.get_last_transaction/1", [address])
+  end
+
+  @impl Library.Common.Chain
   def get_first_transaction_address(address) do
     get_mocked_value("Chain.get_first_transaction_address/1", [address])
   end

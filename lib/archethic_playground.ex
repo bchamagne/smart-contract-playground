@@ -36,12 +36,7 @@ defmodule ArchethicPlayground do
           function_name :: String.t(),
           args_values :: list(any()),
           maybe_state_utxo :: nil | UnspentOutput.t()
-        ) ::
-          {:ok, any()}
-          | {:error, :function_failure}
-          | {:error, :function_does_not_exist}
-          | {:error, :function_is_private}
-          | {:error, :timeout}
+        ) :: Contract.Result.t()
   def execute_function(
         contract_tx,
         function_name,
@@ -49,6 +44,7 @@ defmodule ArchethicPlayground do
         maybe_state_utxo
       ) do
     {:ok, contract} = parse(contract_tx)
+
     Contracts.execute_function(contract, function_name, args_values, maybe_state_utxo)
   end
 

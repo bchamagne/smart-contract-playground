@@ -122,14 +122,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
              {:error, :invalid_state} -> nil
            end
          ) do
-      {:ok, result} ->
-        send(self(), {:console, :success, result})
+      %Contract.Result.PublicFunctionResult.Value{value: value} ->
+        send(self(), {:console, :success, value})
 
-      {:error, :function_failure} ->
-        send(self(), {:console, :error, "Function failed"})
-
-      {:error, :timeout} ->
-        send(self(), {:console, :error, "Function timed-out"})
+      %Contract.Result.Error{user_friendly_error: reason} ->
+        send(self(), {:console, :error, reason})
     end
 
     {:noreply, socket}

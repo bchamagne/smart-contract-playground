@@ -12,6 +12,8 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
   alias ArchethicPlaygroundWeb.TriggerComponent
 
   alias Archethic.Contracts.Contract
+  alias Archethic.Contracts.Contract.Failure
+  alias Archethic.Contracts.Contract.PublicFunctionValue
 
   use ArchethicPlaygroundWeb, :live_view
 
@@ -118,14 +120,11 @@ defmodule ArchethicPlaygroundWeb.EditorLive do
            function_name,
            args_values
          ) do
-      {:ok, result} ->
-        send(self(), {:console, :success, result})
+      %PublicFunctionValue{value: value} ->
+        send(self(), {:console, :success, value})
 
-      {:error, :function_failure} ->
-        send(self(), {:console, :error, "Function failed"})
-
-      {:error, :timeout} ->
-        send(self(), {:console, :error, "Function timed-out"})
+      %Failure{user_friendly_error: reason} ->
+        send(self(), {:console, :error, reason})
     end
 
     {:noreply, socket}

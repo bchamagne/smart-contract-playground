@@ -9,6 +9,7 @@ defmodule ArchethicPlayground do
   alias Archethic.Contracts.Contract.ActionWithoutTransaction
   alias Archethic.Contracts.Contract.ConditionAccepted
   alias Archethic.Contracts.Contract.ConditionRejected
+  alias Archethic.Contracts.Contract.PublicFunctionValue
   alias Archethic.Contracts.Contract.Failure
   alias Archethic.Contracts.Contract
   alias Archethic.TransactionChain.Transaction
@@ -39,12 +40,7 @@ defmodule ArchethicPlayground do
           contract_tx :: PlaygroundTransaction.t(),
           function_name :: String.t(),
           args_values :: list(any())
-        ) ::
-          {:ok, any()}
-          | {:error, :function_failure}
-          | {:error, :function_does_not_exist}
-          | {:error, :function_is_private}
-          | {:error, :timeout}
+        ) :: Failure.t() | PublicFunctionValue.t()
   def execute_function(contract_tx, function_name, args_values) do
     {:ok, contract} = parse(contract_tx)
     Contracts.execute_function(contract, function_name, args_values)

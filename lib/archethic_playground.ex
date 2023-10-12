@@ -2,16 +2,19 @@ defmodule ArchethicPlayground do
   @moduledoc """
   Main module to run the functionality needed
   """
-  alias Archethic.Crypto
+
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
-  alias Archethic.Contracts.State
+  alias Archethic.Contracts.Contract.ActionWithoutTransaction
+  alias Archethic.Contracts.Contract.ActionWithTransaction
+  alias Archethic.Contracts.Contract.Failure
+  alias Archethic.Contracts.Contract.State
+  alias Archethic.Crypto
   alias Archethic.TransactionChain.Transaction
   alias Archethic.TransactionChain.Transaction.ValidationStamp.LedgerOperations.UnspentOutput
-
+  alias ArchethicPlayground.RecipientForm
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
-  alias ArchethicPlayground.RecipientForm
   alias ArchethicPlayground.Utils
 
   require Logger
@@ -104,7 +107,7 @@ defmodule ArchethicPlayground do
     with {:ok, contract} <- parse(transaction_contract),
          maybe_state_utxo <- State.get_utxo_from_transaction(contract.transaction),
          :ok <- check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
-         %Contract.Result.Success{next_tx: next_tx, next_state_utxo: next_state_utxo} <-
+         %ActionWithTransaction{next_tx: next_tx, next_state_utxo: next_state_utxo} <-
            Contracts.execute_trigger(
              trigger,
              contract,
@@ -123,10 +126,10 @@ defmodule ArchethicPlayground do
            ) do
       {:ok, next_tx}
     else
-      %Contract.Result.Noop{} ->
+      %ActionWithoutTransaction{} ->
         {:ok, nil}
 
-      %Contract.Result.Error{user_friendly_error: reason} ->
+      %Failure{user_friendly_error: reason} ->
         {:error, reason}
 
       {:error, reason} ->

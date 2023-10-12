@@ -8,7 +8,7 @@ defmodule ArchethicPlayground.Transaction do
   alias __MODULE__.Ownership
 
   alias Archethic.Crypto
-  alias Archethic.Contracts.State
+  alias Archethic.Contracts.Contract.State
   alias Archethic.TransactionChain.Transaction, as: ArchethicTransaction
   alias Archethic.TransactionChain.TransactionData
   alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient

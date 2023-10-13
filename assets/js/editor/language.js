@@ -31,14 +31,14 @@ export async function setLanguage(monaco) {
         {
           label: 'fun',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: "fun ${1:function_name}(${2:}) do\n\t${3:}\nend",
+          insertText: 'fun ${1:function_name}(${2:}) do\n\t${3:}\nend',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Declares a private function'
         },
         {
           label: 'export fun',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: "export fun ${1:function_name}(${2:}) do\n\t${3:}\nend",
+          insertText: 'export fun ${1:function_name}(${2:}) do\n\t${3:}\nend',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Declares a public function'
         },
@@ -98,56 +98,56 @@ export async function setLanguage(monaco) {
         {
           label: 'Contract.add_uco_transfer/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_uco_transfer to: ${1:0x0000...}, amount: ${2:amount}',
+          insertText: 'Contract.add_uco_transfer to: ${1:receiver_address}, amount: ${2:amount}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a UCO transfer'
         },
         {
           label: 'Contract.add_uco_transfers/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_uco_transfers [\n\t[to: ${1:0x0000...}, amount: ${2:amount}]\n]',
+          insertText: 'Contract.add_uco_transfers [\n\t[to: ${1:receiver_address}, amount: ${2:amount}]\n]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds multiple UCO transfers'
         },
         {
           label: 'Contract.add_token_transfer/3',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_token_transfer to: ${1:0x0000...}, token_address: ${2:0x0000...}, amount: ${3:amount}',
+          insertText: 'Contract.add_token_transfer to: ${1:receiver_address}, token_address: ${2:token_address}, amount: ${3:amount}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a token transfer'
         },
         {
           label: 'Contract.add_token_transfer/4',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_token_transfer to: ${1:0x0000...}, token_address: ${2:0x0000...}, amount: ${3:amount}, token_id: ${4:1}',
+          insertText: 'Contract.add_token_transfer to: ${1:receiver_address}, token_address: ${2:token_address}, amount: ${3:amount}, token_id: ${4:token_id}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a token transfer'
         },
         {
           label: 'Contract.add_token_transfers/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_token_transfers [\n\t[to: ${1:0x0000...}, token_address: ${2:0x0000...}, amount: ${3:amount}]\n]',
+          insertText: 'Contract.add_token_transfers [\n\t[to: ${1:receiver_address}, token_address: ${2:token_address}, amount: ${3:amount}]\n]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds multiple token transfers'
         },
         {
           label: 'Contract.add_recipient/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_recipient ${1:0x0000...}',
+          insertText: 'Contract.add_recipient ${1:contract_address}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a recipient'
         },
         {
           label: 'Contract.add_recipient/3',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_recipient address: ${1:0x0000...}, action: "${2:vote}", args: ["${3:John}"]',
+          insertText: 'Contract.add_recipient address: ${1:contract_address}, action: ${2:action}, args: [${3}]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds a recipient'
         },
         {
           label: 'Contract.add_recipients/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.add_recipients [\n\t[address: ${1:0x0000...}, action: "${2:vote}", args: ["${3:John}"]]\n]',
+          insertText: 'Contract.add_recipients [\n\t[address: ${1:contract_address}, action: ${2:action}, args: [${3}]]\n]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Adds multiple contracts\' recipients'
         },
@@ -157,13 +157,11 @@ export async function setLanguage(monaco) {
           insertText:
             [
               'Contract.add_ownership(',
-              '  secret: ${1:0x...},',
+              '  secret: ${1:encoded_secret},',
               '  authorized_keys:',
               '    Map.set(Map.new(),',
-              '      # public_key',
-              '      ${2:0x0000...},',
-              '      # encryption key',
-              '      ${3:0x...}',
+              '      ${2:public_key},',
+              '      ${3:encoded_encryption_key}',
               '    )',
               ')',
             ].join('\n'),
@@ -176,13 +174,11 @@ export async function setLanguage(monaco) {
           insertText: [
             'Contract.add_ownerships([',
             '  [',
-            '    secret: ${1:0x...},',
+            '    secret: ${1:encoded_secret},',
             '    authorized_keys:',
             '      Map.set(Map.new(),',
-            '        # public_key',
-            '        ${2:0x0000...},',
-            '        # encryption key',
-            '        ${3:0x...}',
+            '        ${2:public_key},',
+            '        ${3:encoded_encryption_key}',
             '      )',
             '  ]',
             '])',
@@ -193,28 +189,28 @@ export async function setLanguage(monaco) {
         {
           label: 'Contract.set_type/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.set_type "${1:transfer}"',
+          insertText: 'Contract.set_type ${1:type}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Sets the next transaction\'s type'
         },
         {
           label: 'Contract.set_content/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.set_content "${1:}"',
+          insertText: 'Contract.set_content ${1:content}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Sets the next transaction\'s content'
         },
         {
           label: 'Contract.set_code/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.set_code "${1:}"',
+          insertText: 'Contract.set_code ${1:code}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Sets the next transaction\'s code'
         },
         {
           label: 'Contract.call_function/3',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Contract.call_function ${1:0x0000...}, "${2:function}", [${3:}]',
+          insertText: 'Contract.call_function ${1:contract_address}, ${2:function_name}, [${3}]',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Calls an external contract public function'
         },
@@ -222,14 +218,14 @@ export async function setLanguage(monaco) {
         {
           label: 'Crypto.hash/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Crypto.hash "${1:}"',
+          insertText: 'Crypto.hash ${1:data}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Hashes the given string'
         },
         {
           label: 'Crypto.hash/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Crypto.hash "${1:}" "${2:sha256}"',
+          insertText: 'Crypto.hash ${1:data}, ${2:algorithm}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Hashes the given string with given algorithm'
         },
@@ -237,28 +233,28 @@ export async function setLanguage(monaco) {
         {
           label: 'Chain.get_genesis_address/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Chain.get_genesis_address ${1:0x0000...}',
+          insertText: 'Chain.get_genesis_address ${1:transaction_address}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Retrieves the genesis address of given address'
         },
         {
           label: 'Chain.get_first_transaction_address/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Chain.get_first_transaction_address ${1:0x0000...}',
+          insertText: 'Chain.get_first_transaction_address ${1:transaction_address}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Retrieves the first transaction\'s address of the chain containing given address'
         },
         {
           label: 'Chain.get_genesis_public_key/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Chain.get_genesis_public_key ${1:0x0000...}',
+          insertText: 'Chain.get_genesis_public_key ${1:public_key}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Retrieves the genesis public key of given public key'
         },
         {
           label: 'Chain.get_transaction/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Chain.get_transaction ${1:0x0000...}',
+          insertText: 'Chain.get_transaction ${1:transaction_address}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Retrieves the transaction at given address'
         },
@@ -269,55 +265,146 @@ export async function setLanguage(monaco) {
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns the burn address'
         },
+        {
+          label: 'Chain.get_balance/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_balance ${1:transaction_address}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the balance of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_uco_balance/2',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_uco_balance ${1:transaction_address}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the uco balance of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_token_balance/2',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_token_balance ${1:transaction_address}, ${2:token_address}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the tokens balance of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_token_balance/3',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_token_balance ${1:transaction_address}, ${2:token_address}, ${3:token_id}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves a token balance of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_tokens_balance/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_tokens_balance ${1:transaction_address}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the tokens balance of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_tokens_balance/2',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_tokens_balance ${1:transaction_address}, [\n\t[token_address: ${2:token1_address}, token_id: ${3:token1_id}]\n]',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the tokens balance of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_last_address/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_last_address ${1:transaction_address}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the address of the latest transaction of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_last_transaction/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_last_transaction ${1:transaction_address}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the latest transaction of the transaction chain that contains transaction_address'
+        },
+        {
+          label: 'Chain.get_previous_address/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_previous_address ${1:transaction}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the address of previous transaction of the transaction at transaction_address'
+        },
+        {
+          label: 'Chain.get_previous_address/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Chain.get_previous_address ${1:transaction}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Retrieves the address of previous transaction of the transaction at transaction_address'
+        },
         // Code
         {
           label: 'Code.is_same?/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Code.is_same? "${1:}", "${2:}"',
+          insertText: 'Code.is_same? ${1:code1}, ${2:code2}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Compares two code strings via their internal representation'
         },
         {
           label: 'Code.is_valid?/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Code.is_valid? "${1:}"',
+          insertText: 'Code.is_valid? ${1:code}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns true if the code parses, false otherwise'
         },
         // Http
         {
-          label: 'Http.fetch/1',
+          label: 'Http.request/1',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Http.fetch "${1:https://}"',
+          insertText: 'Http.request ${1:url}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Fetches the URL via a GET and returns the status and body'
         },
         {
-          label: 'Http.fetch_many/1',
+          label: 'Http.request/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Http.fetch_many [\n\t"${1:https://}",\n\t"${2:https://}"\n]',
+          insertText: 'Http.request ${1:url}, ${2:method}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Fetches up to 5 URLs in parallel and returns the statues and bodies'
+          documentation: 'Fetches the URL via a GET and returns the status and body'
+        },
+        {
+          label: 'Http.request/3',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Http.request ${1:url}, ${2:method}, ${3:headers}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Fetches the URL via a GET and returns the status and body'
+        },
+        {
+          label: 'Http.request/4',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Http.request ${1:url}, ${2:method}, ${3:headers}, ${4:body}',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Fetches the URL via a GET and returns the status and body'
+        },
+        {
+          label: 'Http.request_many/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'Http.request_many [\n\t[url: ${1:url}, method: ${2:method}, headers: ${3:headers}, body: ${4:body}]\n]',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Makes up to 5 HTTP requests in parallel and returns the statues and bodies'
         },
         // Json
         {
           label: 'Json.path_extract/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Json.path_extract ${1:json}, "$.firstName"',
+          insertText: 'Json.path_extract ${1:json}, ${2:path}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Extracts a value from the given JSON by it\'s path'
         },
         {
           label: 'Json.path_match?/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Json.path_match? ${1:json}, "$.firstName"',
+          insertText: 'Json.path_match? ${1:json}, ${2:path}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns wether there is a value at given path or not'
         },
         {
           label: 'Json.to_string/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Json.to_string ${1:}',
+          insertText: 'Json.to_string ${1:data}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Converts the given term to JSON'
         },
@@ -339,21 +426,21 @@ export async function setLanguage(monaco) {
         {
           label: 'Regex.extract/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Regex.extract ${1:data}, "${2:^[0-9]+$}"',
+          insertText: 'Regex.extract ${1:data}, ${2:pattern}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Extracts the value from given data matching the given regex'
         },
         {
           label: 'Regex.match?/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Regex.match? ${1:data}, "${2:^[0-9]+$}"',
+          insertText: 'Regex.match? ${1:data}, ${2:pattern}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns wether the given pattern matches with given data'
         },
         {
           label: 'Regex.scan/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Regex.scan ${1:data}, "${2:^([0-9]+)$}"',
+          insertText: 'Regex.scan ${1:data}, ${2:pattern}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Similar to extract/2 but returns the captured groups'
         },
@@ -368,7 +455,7 @@ export async function setLanguage(monaco) {
         {
           label: 'String.in?/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'String.in? ${1:haystack}, "${2:needle}"',
+          insertText: 'String.in? ${1:haystack}, ${2:needle}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns wether the needle is in the haystack or not'
         },
@@ -411,7 +498,7 @@ export async function setLanguage(monaco) {
         {
           label: 'List.at/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'List.at ${1:list}, ${2:0}',
+          insertText: 'List.at ${1:list}, ${2:index}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns the element at given index or nil'
         },
@@ -460,7 +547,7 @@ export async function setLanguage(monaco) {
         {
           label: 'List.join/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'List.join ${1:list}, "${2:,}"',
+          insertText: 'List.join ${1:list}, ${2:separator}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Joins a list of string with given separator'
         },
@@ -482,21 +569,21 @@ export async function setLanguage(monaco) {
         {
           label: 'Map.get/2',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Map.get ${1:map}, "${2:key}"',
+          insertText: 'Map.get ${1:map}, ${2:key}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns the value in given map at given key'
         },
         {
           label: 'Map.get/3',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Map.get ${1:map}, "${2:key}", "default value"',
+          insertText: 'Map.get ${1:map}, ${2:key}, ${3:default}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns the value in given map at given key (with a default value)'
         },
         {
           label: 'Map.set/3',
           kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'Map.get ${1:map}, "${2:key}", ${3:value}',
+          insertText: 'Map.get ${1:map}, ${2:key}, ${3:value}',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Updates given map by setting given value at given key'
         },

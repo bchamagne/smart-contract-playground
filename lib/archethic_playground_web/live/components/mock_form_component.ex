@@ -60,7 +60,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent do
       __MODULE__.ChainGetGenesisPublicKey1,
       __MODULE__.ChainGetTransaction1,
       __MODULE__.ContractCallFunction3,
-      __MODULE__.HttpFetch1,
+      __MODULE__.HttpRequest1,
       __MODULE__.HttpRequestMany1,
       __MODULE__.TimeNow0,
       __MODULE__.TokenFetchIdFromAddress1

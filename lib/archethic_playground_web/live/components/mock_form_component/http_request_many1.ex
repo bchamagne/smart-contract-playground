@@ -4,6 +4,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequestMany1 do
   """
 
   alias ArchethicPlayground.Mock
+  alias ArchethicPlayground.Utils
   use ArchethicPlaygroundWeb, :live_component
 
   def name(), do: "Http.request_many/1"
@@ -69,7 +70,10 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequestMany1 do
           do: %{
             "req_url" => params["req_url#{i}"] |> String.trim(),
             "req_method" => params["req_method#{i}"],
-            "req_headers" => parse_headers(params["req_headers#{i}"]),
+            "req_headers" =>
+              params["req_headers#{i}"]
+              |> Utils.Http.headers_from_string(on_error: :ignore)
+              |> elem(1),
             "req_body" => params["req_body#{i}"] |> String.trim(),
             "resp_status" => params["resp_status#{i}"] |> String.trim() |> String.to_integer(),
             "resp_body" => params["resp_body#{i}"] |> String.trim()
@@ -101,27 +105,6 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequestMany1 do
     socket.assigns.on_update.(mock)
 
     socket
-  end
-
-  defp parse_headers(""), do: %{}
-
-  defp parse_headers(text) do
-    lines = String.split(text, "\n")
-
-    Enum.reduce(lines, %{}, fn
-      "", acc ->
-        acc
-
-      l, acc ->
-        case String.split(l, ":") do
-          [key, value] ->
-            Map.put(acc, String.trim(key), String.trim(value))
-
-          _ ->
-            # how to give feedback?
-            acc
-        end
-    end)
   end
 
   defp assign_form(socket, params) do

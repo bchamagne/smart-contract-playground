@@ -61,6 +61,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent do
       __MODULE__.ChainGetLastAddress1,
       __MODULE__.ChainGetLastTransaction1,
       __MODULE__.ChainGetTransaction1,
+      __MODULE__.ChainGetUcoBalance1,
       __MODULE__.ContractCallFunction3,
       __MODULE__.HttpRequest1,
       __MODULE__.HttpRequest2,

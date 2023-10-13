@@ -150,6 +150,20 @@ defmodule ArchethicPlayground.MockFunctions do
 
   @impl Library.Common.Http
   def request_many(reqs) do
+    # we need to set the default on each req
+    # because to match the mock, all fields are required
+    reqs =
+      Enum.map(reqs, fn req ->
+        Map.merge(
+          %{
+            "method" => "GET",
+            "headers" => "",
+            "body" => ""
+          },
+          req
+        )
+      end)
+
     get_mocked_value("Http.request_many/1", [reqs],
       on_miss: fn ->
         # we autorize normal request

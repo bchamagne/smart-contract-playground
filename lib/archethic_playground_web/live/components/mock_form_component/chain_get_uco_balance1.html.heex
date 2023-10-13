@@ -1,0 +1,6 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:address]} type="text" label="Address" />
+    <.field field={@form[:balance]} type="number" label="UCO balance" />
+  </.form>
+</div>

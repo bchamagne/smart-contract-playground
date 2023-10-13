@@ -1,0 +1,7 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:chain_address]} type="text" label="Chain address" />
+    <.field field={@form[:token_address]} type="text" label="Token address" />
+    <.field field={@form[:balance]} type="number" label="Token balance" />
+  </.form>
+</div>

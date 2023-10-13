@@ -67,9 +67,10 @@ defmodule ArchethicPlayground.MockFunctions do
     get_mocked_value("Chain.get_transaction/1", [address])
   end
 
+  # no need to mock but still part of the behaviour
   @impl Library.Common.Chain
   def get_previous_address(address) do
-    get_mocked_value("Chain.get_previous_address/1", [address])
+    Library.Common.ChainImpl.get_previous_address(address)
   end
 
   @impl Library.Common.Chain

@@ -1,0 +1,18 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:address]} type="text" label="Address" />
+  </.form>
+
+  <div class="rounded border p-2 border-gray-500 mb-4">
+    <.h3 class="text-center">Output transaction</.h3>
+    <.live_component
+      id="form-mock-chain-get-transaction1"
+      module={TransactionFormComponent}
+      display_mocks={true}
+      display_code={true}
+      global_variable="transaction"
+      parent={@myself}
+      transaction={@transaction}
+    />
+  </div>
+</div>

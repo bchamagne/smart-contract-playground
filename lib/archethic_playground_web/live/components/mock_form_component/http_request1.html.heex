@@ -1,0 +1,7 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:req_url]} type="text" label="Url" />
+    <.field field={@form[:resp_status]} type="number" label="Response Status" />
+    <.field field={@form[:resp_body]} type="textarea" label="Response Body" />
+  </.form>
+</div>

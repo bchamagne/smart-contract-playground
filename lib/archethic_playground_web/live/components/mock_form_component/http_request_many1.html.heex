@@ -1,0 +1,121 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <%= if @count >= 1 do %>
+      <.field field={@form[:req_url1]} type="text" label="Url" />
+      <.field
+        field={@form[:req_method1]}
+        type="select"
+        options={accepted_methods()}
+        label="Method"
+      />
+      <.field
+        field={@form[:req_headers1]}
+        type="textarea"
+        label="Headers"
+        help_text="One header per line. Example: Content-Type: application/json"
+      />
+      <.field field={@form[:req_body1]} type="textarea" label="Body" />
+      <.field field={@form[:resp_status1]} type="number" label="Response Status" />
+      <.field field={@form[:resp_body1]} type="textarea" label="Response Body" />
+    <% end %>
+    <%= if @count >= 2 do %>
+      <.field field={@form[:req_url2]} type="text" label="Url" />
+      <.field
+        field={@form[:req_method2]}
+        type="select"
+        options={accepted_methods()}
+        label="Method"
+      />
+      <.field
+        field={@form[:req_headers2]}
+        type="textarea"
+        label="Headers"
+        help_text="One header per line. Example: Content-Type: application/json"
+      />
+      <.field field={@form[:req_body2]} type="textarea" label="Body" />
+      <.field field={@form[:resp_status2]} type="number" label="Response Status" />
+      <.field field={@form[:resp_body2]} type="textarea" label="Response Body" />
+    <% end %>
+    <%= if @count >= 3 do %>
+      <.field field={@form[:req_url3]} type="text" label="Url" />
+      <.field
+        field={@form[:req_method3]}
+        type="select"
+        options={accepted_methods()}
+        label="Method"
+      />
+      <.field
+        field={@form[:req_headers3]}
+        type="textarea"
+        label="Headers"
+        help_text="One header per line. Example: Content-Type: application/json"
+      />
+      <.field field={@form[:req_body3]} type="textarea" label="Body" />
+      <.field field={@form[:resp_status3]} type="number" label="Response Status" />
+      <.field field={@form[:resp_body3]} type="textarea" label="Response Body" />
+    <% end %>
+    <%= if @count >= 4 do %>
+      <.field field={@form[:req_url4]} type="text" label="Url" />
+      <.field
+        field={@form[:req_method4]}
+        type="select"
+        options={accepted_methods()}
+        label="Method"
+      />
+      <.field
+        field={@form[:req_headers4]}
+        type="textarea"
+        label="Headers"
+        help_text="One header per line. Example: Content-Type: application/json"
+      />
+      <.field field={@form[:req_body4]} type="textarea" label="Body" />
+      <.field field={@form[:resp_status4]} type="number" label="Response Status" />
+      <.field field={@form[:resp_body4]} type="textarea" label="Response Body" />
+    <% end %>
+    <%= if @count >= 5 do %>
+      <.field field={@form[:req_url5]} type="text" label="Url" />
+      <.field
+        field={@form[:req_method5]}
+        type="select"
+        options={accepted_methods()}
+        label="Method"
+      />
+      <.field
+        field={@form[:req_headers5]}
+        type="textarea"
+        label="Headers"
+        help_text="One header per line. Example: Content-Type: application/json"
+      />
+      <.field field={@form[:req_body5]} type="textarea" label="Body" />
+      <.field field={@form[:resp_status5]} type="number" label="Response Status" />
+      <.field field={@form[:resp_body5]} type="textarea" label="Response Body" />
+    <% end %>
+
+    <div class="flex gap-2 mb-4">
+      <.button
+        disabled={@count <= 1}
+        label="Remove one"
+        link_type="a"
+        to="#"
+        phx-click="decrement"
+        phx-target={@myself}
+        icon={:minus}
+        variant="outline"
+        size="xs"
+        class="w-1/2"
+      />
+      <.button
+        disabled={@count >= 5}
+        label="Add one"
+        link_type="a"
+        to="#"
+        phx-click="increment"
+        phx-target={@myself}
+        icon={:plus}
+        variant="outline"
+        size="xs"
+        class="w-1/2"
+      />
+    </div>
+  </.form>
+</div>

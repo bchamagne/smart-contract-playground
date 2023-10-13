@@ -1,4 +1,4 @@
-defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequest1 do
+defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequest2 do
   @moduledoc """
 
   """
@@ -6,11 +6,14 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequest1 do
   alias ArchethicPlayground.Mock
   use ArchethicPlaygroundWeb, :live_component
 
-  def name(), do: "Http.request/1"
+  def name(), do: "Http.request/2"
+
+  def accepted_methods(), do: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
   def mount(socket) do
     initial_params = %{
       "req_url" => "",
+      "req_method" => "GET",
       "resp_status" => "200",
       "resp_body" => ""
     }
@@ -22,8 +25,8 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.HttpRequest1 do
     mock = %Mock{
       function: name(),
       inputs: [
-        params["req_url"]
-        |> String.trim()
+        params["req_url"] |> String.trim(),
+        params["req_method"]
       ],
       output: %{
         "status" =>

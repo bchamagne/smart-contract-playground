@@ -62,6 +62,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent do
       __MODULE__.ContractCallFunction3,
       __MODULE__.HttpRequest1,
       __MODULE__.HttpRequest2,
+      __MODULE__.HttpRequest3,
       __MODULE__.HttpRequestMany1,
       __MODULE__.TimeNow0,
       __MODULE__.TokenFetchIdFromAddress1

@@ -1,0 +1,14 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:req_url]} type="text" label="Url" />
+    <.field field={@form[:req_method]} type="select" options={accepted_methods()} label="Method" />
+    <.field
+        field={@form[:req_headers]}
+        type="textarea"
+        label="Headers"
+        help_text="One header per line. Example: Content-Type: application/json"
+      />
+    <.field field={@form[:resp_status]} type="number" label="Response Status" />
+    <.field field={@form[:resp_body]} type="textarea" label="Response Body" />
+  </.form>
+</div>

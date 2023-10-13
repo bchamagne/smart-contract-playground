@@ -3,7 +3,6 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetTransaction1 do
 
   alias ArchethicPlayground.Transaction
   alias ArchethicPlayground.Mock
-  alias ArchethicPlayground.Utils
   alias ArchethicPlaygroundWeb.TransactionFormComponent
   alias Archethic.Contracts.ContractConstants, as: Constants
 
@@ -16,10 +15,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetTransaction1 do
       socket
       |> assign(
         form: to_form(%{"address" => nil}),
-        transaction: %Transaction{
-          type: "data",
-          validation_timestamp: Utils.Date.datetime_to_browser_timestamp(DateTime.utc_now())
-        }
+        transaction: Transaction.new(%{"type" => "data"})
       )
 
     {:ok, socket}

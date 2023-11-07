@@ -8,8 +8,9 @@ defmodule ArchethicPlayground.Transaction do
   alias __MODULE__.Ownership
 
   alias Archethic.Crypto
-  alias Archethic.Contracts.State
+  alias Archethic.Contracts.Contract.State
   alias Archethic.TransactionChain.Transaction, as: ArchethicTransaction
+  alias Archethic.TransactionChain.Transaction.ValidationStamp.LedgerOperations.UnspentOutput
   alias Archethic.TransactionChain.TransactionData
   alias Archethic.TransactionChain.TransactionData.Recipient, as: ArchethicRecipient
   alias Archethic.TransactionChain.TransactionData.Ownership, as: ArchethicOwnership
@@ -267,7 +268,7 @@ defmodule ArchethicPlayground.Transaction do
     }
   end
 
-  def from_archethic(t = %ArchethicTransaction{}, maybe_state_utxo, seed, index) do
+  def from_archethic(t = %ArchethicTransaction{}, encoded_state, seed, index) do
     %__MODULE__{
       seed: seed,
       index: index,
@@ -275,9 +276,13 @@ defmodule ArchethicPlayground.Transaction do
       code: t.data.code,
       content: t.data.content,
       state:
-        case maybe_state_utxo do
-          nil -> nil
-          state_utxo -> State.from_utxo(state_utxo) |> Jason.encode!()
+        case encoded_state do
+          nil ->
+            nil
+
+          _ ->
+            {state, <<>>} = State.deserialize(encoded_state)
+            Jason.encode!(state)
         end,
       validation_timestamp:
         if t.validation_stamp != nil do
@@ -360,7 +365,11 @@ defmodule ArchethicPlayground.Transaction do
       state_str ->
         case Jason.decode(state_str) do
           {:ok, map} when is_map(map) ->
-            State.to_utxo(map)
+            {:ok,
+             %UnspentOutput{
+               type: :state,
+               encoded_payload: State.serialize(map)
+             }}
 
           _ ->
             {:error, :invalid_state}

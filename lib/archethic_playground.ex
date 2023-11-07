@@ -5,9 +5,13 @@ defmodule ArchethicPlayground do
   alias Archethic.Crypto
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
-  alias Archethic.Contracts.State
+  alias Archethic.Contracts.Contract.ActionWithTransaction
+  alias Archethic.Contracts.Contract.ActionWithoutTransaction
+  alias Archethic.Contracts.Contract.ConditionAccepted
+  alias Archethic.Contracts.Contract.ConditionRejected
+  alias Archethic.Contracts.Contract.Failure
+  alias Archethic.Contracts.Contract
   alias Archethic.TransactionChain.Transaction
-  alias Archethic.TransactionChain.Transaction.ValidationStamp.LedgerOperations.UnspentOutput
 
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
@@ -34,22 +38,16 @@ defmodule ArchethicPlayground do
   @spec execute_function(
           contract_tx :: PlaygroundTransaction.t(),
           function_name :: String.t(),
-          args_values :: list(any()),
-          maybe_state_utxo :: nil | UnspentOutput.t()
+          args_values :: list(any())
         ) ::
           {:ok, any()}
           | {:error, :function_failure}
           | {:error, :function_does_not_exist}
           | {:error, :function_is_private}
           | {:error, :timeout}
-  def execute_function(
-        contract_tx,
-        function_name,
-        args_values,
-        maybe_state_utxo
-      ) do
+  def execute_function(contract_tx, function_name, args_values) do
     {:ok, contract} = parse(contract_tx)
-    Contracts.execute_function(contract, function_name, args_values, maybe_state_utxo)
+    Contracts.execute_function(contract, function_name, args_values)
   end
 
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
@@ -102,39 +100,37 @@ defmodule ArchethicPlayground do
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
-         maybe_state_utxo <- State.get_utxo_from_transaction(contract.transaction),
-         %Contract.Result.ConditionResult.Accepted{} <-
+         %ConditionAccepted{} <-
            check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
-         %Contract.Result.ActionResult.WithNextTransaction{
+         %ActionWithTransaction{
            next_tx: next_tx,
-           next_state_utxo: next_state_utxo
+           encoded_state: encoded_state
          } <-
            Contracts.execute_trigger(
              trigger,
              contract,
              maybe_tx,
              maybe_recipient,
-             maybe_state_utxo,
              time_now: datetime
            ),
-         %Contract.Result.ConditionResult.Accepted{} <-
+         %ConditionAccepted{} <-
            check_valid_postcondition(contract, next_tx, datetime),
          next_tx <-
            PlaygroundTransaction.from_archethic(
              next_tx,
-             next_state_utxo,
+             encoded_state,
              transaction_contract.seed,
              1 + transaction_contract.index
            ) do
       {:ok, next_tx}
     else
-      %Contract.Result.ConditionResult.Rejected{subject: subject} ->
+      %ConditionRejected{subject: subject} ->
         {:error, "Condition failed (section: #{subject})"}
 
-      %Contract.Result.ActionResult.WithoutNextTransaction{} ->
+      %ActionWithoutTransaction{} ->
         {:ok, nil}
 
-      %Contract.Result.Error{user_friendly_error: reason} ->
+      %Failure{user_friendly_error: reason} ->
         {:error, reason}
 
       {:error, reason} ->

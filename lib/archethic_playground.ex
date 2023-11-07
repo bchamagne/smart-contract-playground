@@ -5,13 +5,15 @@ defmodule ArchethicPlayground do
 
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
-  alias Archethic.Contracts.Contract.ActionWithoutTransaction
   alias Archethic.Contracts.Contract.ActionWithTransaction
+  alias Archethic.Contracts.Contract.ActionWithoutTransaction
+  alias Archethic.Contracts.Contract.ConditionAccepted
+  alias Archethic.Contracts.Contract.ConditionRejected
+  alias Archethic.Contracts.Contract.PublicFunctionValue
   alias Archethic.Contracts.Contract.Failure
-  alias Archethic.Contracts.Contract.State
+  alias Archethic.Contracts.Contract
   alias Archethic.Crypto
   alias Archethic.TransactionChain.Transaction
-  alias Archethic.TransactionChain.Transaction.ValidationStamp.LedgerOperations.UnspentOutput
   alias ArchethicPlayground.RecipientForm
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
@@ -37,22 +39,11 @@ defmodule ArchethicPlayground do
   @spec execute_function(
           contract_tx :: PlaygroundTransaction.t(),
           function_name :: String.t(),
-          args_values :: list(any()),
-          maybe_state_utxo :: nil | UnspentOutput.t()
-        ) ::
-          {:ok, any()}
-          | {:error, :function_failure}
-          | {:error, :function_does_not_exist}
-          | {:error, :function_is_private}
-          | {:error, :timeout}
-  def execute_function(
-        contract_tx,
-        function_name,
-        args_values,
-        maybe_state_utxo
-      ) do
+          args_values :: list(any())
+        ) :: Failure.t() | PublicFunctionValue.t()
+  def execute_function(contract_tx, function_name, args_values) do
     {:ok, contract} = parse(contract_tx)
-    Contracts.execute_function(contract, function_name, args_values, maybe_state_utxo)
+    Contracts.execute_function(contract, function_name, args_values)
   end
 
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
@@ -105,27 +96,33 @@ defmodule ArchethicPlayground do
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
-         maybe_state_utxo <- State.get_utxo_from_transaction(contract.transaction),
-         :ok <- check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
-         %ActionWithTransaction{next_tx: next_tx, next_state_utxo: next_state_utxo} <-
+         %ConditionAccepted{} <-
+           check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
+         %ActionWithTransaction{
+           next_tx: next_tx,
+           encoded_state: encoded_state
+         } <-
            Contracts.execute_trigger(
              trigger,
              contract,
              maybe_tx,
              maybe_recipient,
-             maybe_state_utxo,
              time_now: datetime
            ),
-         :ok <- check_valid_postcondition(contract, next_tx, datetime),
+         %ConditionAccepted{} <-
+           check_valid_postcondition(contract, next_tx, datetime),
          next_tx <-
            PlaygroundTransaction.from_archethic(
              next_tx,
-             next_state_utxo,
+             encoded_state,
              transaction_contract.seed,
              1 + transaction_contract.index
            ) do
       {:ok, next_tx}
     else
+      %ConditionRejected{subject: subject} ->
+        {:error, "Condition failed (section: #{subject})"}
+
       %ActionWithoutTransaction{} ->
         {:ok, nil}
 
@@ -159,11 +156,7 @@ defmodule ArchethicPlayground do
          nil,
          datetime
        ) do
-    if Contracts.valid_condition?(:oracle, contract, tx, nil, datetime) do
-      :ok
-    else
-      {:error, :invalid_oracle_constraints}
-    end
+    Contracts.execute_condition(:oracle, contract, tx, nil, datetime)
   end
 
   defp check_valid_precondition(
@@ -173,11 +166,7 @@ defmodule ArchethicPlayground do
          recipient,
          datetime
        ) do
-    if Contracts.valid_condition?(condition_type, contract, tx, recipient, datetime) do
-      :ok
-    else
-      {:error, :invalid_transaction_constraints}
-    end
+    Contracts.execute_condition(condition_type, contract, tx, recipient, datetime)
   end
 
   defp check_valid_precondition(_, _, _, _, _), do: :ok
@@ -187,11 +176,7 @@ defmodule ArchethicPlayground do
          next_tx = %Transaction{},
          datetime
        ) do
-    if Contracts.valid_condition?(:inherit, contract, next_tx, nil, datetime) do
-      :ok
-    else
-      {:error, :invalid_inherit_constraints}
-    end
+    Contracts.execute_condition(:inherit, contract, next_tx, nil, datetime)
   end
 
   defp check_valid_postcondition(_, _, _), do: :ok

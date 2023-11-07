@@ -5,7 +5,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetTransaction1 do
   alias ArchethicPlayground.Mock
   alias ArchethicPlayground.Utils
   alias ArchethicPlaygroundWeb.TransactionFormComponent
-  alias Archethic.Contracts.ContractConstants, as: Constants
+  alias Archethic.Contracts.Constants
 
   use ArchethicPlaygroundWeb, :live_component
 

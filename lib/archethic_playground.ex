@@ -2,14 +2,19 @@ defmodule ArchethicPlayground do
   @moduledoc """
   Main module to run the functionality needed
   """
-  alias Archethic.Crypto
+
   alias Archethic.Contracts
   alias Archethic.Contracts.Contract
+  alias Archethic.Contracts.Contract.ActionWithoutTransaction
+  alias Archethic.Contracts.Contract.ActionWithTransaction
+  alias Archethic.Contracts.Contract.Failure
+  alias Archethic.Contracts.Contract.State
+  alias Archethic.Crypto
   alias Archethic.TransactionChain.Transaction
-
+  alias Archethic.TransactionChain.Transaction.ValidationStamp.LedgerOperations.UnspentOutput
+  alias ArchethicPlayground.RecipientForm
   alias ArchethicPlayground.Transaction, as: PlaygroundTransaction
   alias ArchethicPlayground.TriggerForm
-  alias ArchethicPlayground.RecipientForm
   alias ArchethicPlayground.Utils
 
   require Logger
@@ -32,7 +37,8 @@ defmodule ArchethicPlayground do
   @spec execute_function(
           contract_tx :: PlaygroundTransaction.t(),
           function_name :: String.t(),
-          args_values :: list(any())
+          args_values :: list(any()),
+          maybe_state_utxo :: nil | UnspentOutput.t()
         ) ::
           {:ok, any()}
           | {:error, :function_failure}
@@ -42,10 +48,11 @@ defmodule ArchethicPlayground do
   def execute_function(
         contract_tx,
         function_name,
-        args_values
+        args_values,
+        maybe_state_utxo
       ) do
     {:ok, contract} = parse(contract_tx)
-    Contracts.execute_function(contract, function_name, args_values)
+    Contracts.execute_function(contract, function_name, args_values, maybe_state_utxo)
   end
 
   @spec execute(PlaygroundTransaction.t(), TriggerForm.t(), list(Mock.t())) ::
@@ -98,27 +105,36 @@ defmodule ArchethicPlayground do
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
+         maybe_state_utxo <- State.get_utxo_from_transaction(contract.transaction),
          :ok <- check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
-         {:ok, tx_or_nil} <-
+         %ActionWithTransaction{next_tx: next_tx, next_state_utxo: next_state_utxo} <-
            Contracts.execute_trigger(
              trigger,
              contract,
              maybe_tx,
              maybe_recipient,
+             maybe_state_utxo,
              time_now: datetime
            ),
-         :ok <- check_valid_postcondition(contract, tx_or_nil, datetime),
-         tx_or_nil <-
+         :ok <- check_valid_postcondition(contract, next_tx, datetime),
+         next_tx <-
            PlaygroundTransaction.from_archethic(
-             tx_or_nil,
+             next_tx,
+             next_state_utxo,
              transaction_contract.seed,
              1 + transaction_contract.index
            ) do
-      {:ok, tx_or_nil}
+      {:ok, next_tx}
+    else
+      %ActionWithoutTransaction{} ->
+        {:ok, nil}
+
+      %Failure{user_friendly_error: reason} ->
+        {:error, reason}
+
+      {:error, reason} ->
+        {:error, reason}
     end
-  catch
-    {:error, reason} ->
-      {:error, reason}
   end
 
   defp get_time_now(mocks) do

@@ -1,0 +1,95 @@
+<div>
+  <.form for={@form} phx-change="on-form-change" phx-target={@myself}>
+    <.field field={@form[:address]} type="text" label="Chain address" />
+    <.field field={@form[:tokens_count]} type="hidden" />
+
+    <div class="rounded border p-2 border-gray-500 mb-4">
+      <.h3 class="text-center">Tokens</.h3>
+      <% tokens_count = input_value(@form, :tokens_count) %>
+      <%= if tokens_count > 0 do %>
+        <%= for i <- 1..tokens_count do %>
+          <% index = Integer.to_string(i - 1) %>
+          <div class="flex gap-2 mb-4">
+            <div class="pc-form-field-wrapper w-1/3">
+              <label class="pc-label" for={"tokens_addresses[#{index}]"}>
+                Token address
+              </label>
+              <input
+                type="text"
+                class="pc-text-input"
+                name={"tokens_addresses[#{index}]"}
+                id={"tokens_addresses[#{index}]"}
+                value={
+                  case input_value(@form, :tokens_addresses) do
+                    nil -> ""
+                    [] -> ""
+                    tokens_addresses -> Map.get(tokens_addresses, index)
+                  end
+                }
+              />
+            </div>
+            <div class="pc-form-field-wrapper w-1/3">
+              <label class="pc-label" for={"tokens_ids[#{index}]"}>Token id</label>
+              <input
+                type="number"
+                step="1"
+                class="pc-text-input"
+                name={"tokens_ids[#{index}]"}
+                id={"tokens_ids[#{index}]"}
+                value={
+                  case input_value(@form, :tokens_ids) do
+                    nil -> 0
+                    [] -> 0
+                    tokens_ids -> Map.get(tokens_ids, index, 0)
+                  end
+                }
+              />
+            </div>
+            <div class="pc-form-field-wrapper w-1/3">
+              <label class="pc-label" for={"balances[#{index}]"}>Token balance</label>
+              <input
+                type="number"
+                step="0.00000001"
+                class="pc-text-input"
+                name={"balances[#{index}]"}
+                id={"balances[#{index}]"}
+                value={
+                  case input_value(@form, :balances) do
+                    nil -> 0.0
+                    [] -> 0.0
+                    balances -> Map.get(balances, index, 0.0)
+                  end
+                }
+              />
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+      <div class="flex gap-2 mb-4">
+        <.button
+          disabled={tokens_count == 0}
+          label="Remove one"
+          link_type="a"
+          to="#"
+          phx-click="remove-token"
+          phx-target={@myself}
+          icon={:minus}
+          variant="outline"
+          size="xs"
+          class="w-1/2"
+        />
+        <.button
+          label="Add one"
+          link_type="a"
+          to="#"
+          phx-click="add-token"
+          phx-target={@myself}
+          icon={:plus}
+          variant="outline"
+          size="xs"
+          class="w-1/2"
+        />
+      </div>
+    </div>
+  </.form>
+</div>

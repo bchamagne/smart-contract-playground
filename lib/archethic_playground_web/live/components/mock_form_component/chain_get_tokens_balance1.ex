@@ -1,4 +1,4 @@
-defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetBalance1 do
+defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetTokensBalance1 do
   @moduledoc """
 
   """
@@ -6,12 +6,11 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetBalance1 do
   alias ArchethicPlayground.Mock
   use ArchethicPlaygroundWeb, :live_component
 
-  def name(), do: "Chain.get_balance/1"
+  def name(), do: "Chain.get_tokens_balance/1"
 
   def mount(socket) do
     initial_params = %{
       "address" => nil,
-      "uco_balance" => 0.0,
       "tokens_count" => 0,
       "tokens_addresses" => [],
       "tokens_ids" => [],
@@ -69,14 +68,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent.ChainGetBalance1 do
         |> String.trim()
         |> String.upcase()
       ],
-      output: %{
-        "uco" =>
-          case params["uco_balance"] |> Float.parse() do
-            {float, ""} -> float
-            _ -> 0.0
-          end,
-        "tokens" => tokens_balance
-      }
+      output: tokens_balance
     }
 
     # update parent

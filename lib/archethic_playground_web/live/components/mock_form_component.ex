@@ -56,6 +56,7 @@ defmodule ArchethicPlaygroundWeb.MockFormComponent do
   defp mock_modules() do
     [
       __MODULE__.ChainGetBalance1,
+      __MODULE__.ChainGetTokensBalance1,
       __MODULE__.ChainGetFirstTransactionAddress1,
       __MODULE__.ChainGetGenesisAddress1,
       __MODULE__.ChainGetGenesisPublicKey1,

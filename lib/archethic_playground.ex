@@ -7,9 +7,6 @@ defmodule ArchethicPlayground do
   alias Archethic.Contracts.Contract
   alias Archethic.Contracts.Contract.ActionWithTransaction
   alias Archethic.Contracts.Contract.ActionWithoutTransaction
-  alias Archethic.Contracts.Contract.ConditionAccepted
-  alias Archethic.Contracts.Contract.ConditionRejected
-  alias Archethic.Contracts.Contract.PublicFunctionValue
   alias Archethic.Contracts.Contract.Failure
   alias Archethic.Contracts.Contract
   alias Archethic.Crypto
@@ -40,7 +37,12 @@ defmodule ArchethicPlayground do
           contract_tx :: PlaygroundTransaction.t(),
           function_name :: String.t(),
           args_values :: list(any())
-        ) :: Failure.t() | PublicFunctionValue.t()
+        ) ::
+          {:ok, result :: any()}
+          | {:error, :function_failure}
+          | {:error, :function_does_not_exist}
+          | {:error, :function_is_private}
+          | {:error, :timeout}
   def execute_function(contract_tx, function_name, args_values) do
     {:ok, contract} = parse(contract_tx)
     Contracts.execute_function(contract, function_name, args_values)
@@ -96,7 +98,7 @@ defmodule ArchethicPlayground do
     ArchethicPlayground.MockFunctions.prepare_mocks(mocks)
 
     with {:ok, contract} <- parse(transaction_contract),
-         %ConditionAccepted{} <-
+         true <-
            check_valid_precondition(trigger, contract, maybe_tx, maybe_recipient, datetime),
          %ActionWithTransaction{
            next_tx: next_tx,
@@ -109,7 +111,7 @@ defmodule ArchethicPlayground do
              maybe_recipient,
              time_now: datetime
            ),
-         %ConditionAccepted{} <-
+         true <-
            check_valid_postcondition(contract, next_tx, datetime),
          next_tx <-
            PlaygroundTransaction.from_archethic(
@@ -120,8 +122,8 @@ defmodule ArchethicPlayground do
            ) do
       {:ok, next_tx}
     else
-      %ConditionRejected{subject: subject} ->
-        {:error, "Condition failed (section: #{subject})"}
+      false ->
+        {:error, "Condition failed"}
 
       %ActionWithoutTransaction{} ->
         {:ok, nil}
@@ -156,7 +158,7 @@ defmodule ArchethicPlayground do
          nil,
          datetime
        ) do
-    Contracts.execute_condition(:oracle, contract, tx, nil, datetime)
+    Contracts.valid_condition?(:oracle, contract, tx, nil, datetime)
   end
 
   defp check_valid_precondition(
@@ -166,7 +168,7 @@ defmodule ArchethicPlayground do
          recipient,
          datetime
        ) do
-    Contracts.execute_condition(condition_type, contract, tx, recipient, datetime)
+    Contracts.valid_condition?(condition_type, contract, tx, recipient, datetime)
   end
 
   defp check_valid_precondition(_, _, _, _, _), do: :ok
@@ -176,7 +178,7 @@ defmodule ArchethicPlayground do
          next_tx = %Transaction{},
          datetime
        ) do
-    Contracts.execute_condition(:inherit, contract, next_tx, nil, datetime)
+    Contracts.valid_condition?(:inherit, contract, next_tx, nil, datetime)
   end
 
   defp check_valid_postcondition(_, _, _), do: :ok

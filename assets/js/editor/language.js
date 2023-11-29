@@ -601,6 +601,36 @@ export async function setLanguage(monaco) {
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
           documentation: 'Returns the map values'
         },
+
+        // State
+        {
+          label: 'State.get/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'State.get("${1:key}")',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Return the value stored at given key. Return nil if no value'
+        },
+        {
+          label: 'State.get/2',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'State.get("${1:key}", ${2:default})',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Return the value stored at given key. Return default if no value.'
+        },
+        {
+          label: 'State.set/2',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'State.set("${1:key}", ${2:value})',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Store the value in the state under given key'
+        },
+        {
+          label: 'State.delete/1',
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: 'State.delete("${1:key}")',
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          documentation: 'Remove the value stored under key from the state'
+        },
         // Time
         {
           label: 'Time.now/0',
